@@ -21,7 +21,6 @@ C:\Programacion I\GRUPAL\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\scopedcss\bundle\GRUPAL.styles.css
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\scopedcss\projectbundle\GRUPAL.bundle.scp.css
-C:\Programacion I\GRUPAL\obj\Debug\net10.0\compressed\8szpvktz79-{0}-b9sayid5wm-b9sayid5wm.gz
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\compressed\q5sn0i2u3p-{0}-61n19gt1b8-61n19gt1b8.gz
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\compressed\du06xnbhxb-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 C:\Programacion I\GRUPAL\obj\Debug\net10.0\compressed\ok8vzabdb7-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -220,3 +219,14 @@ C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify\GRUPAL.deps.json
 C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify\GRUPAL.runtimeconfig.json
 C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify\GRUPAL.dll
 C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify\GRUPAL.pdb
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\appsettings.Development.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\appsettings.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.staticwebassets.runtime.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.staticwebassets.endpoints.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.exe
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.deps.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.runtimeconfig.json
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.dll
+C:\Users\Paul David\AppData\Local\Temp\opencode\altoke-verify2\GRUPAL.pdb
+C:\Programacion I\GRUPAL\obj\Debug\net10.0\GRUPAL.sourcelink.json
+C:\Programacion I\GRUPAL\obj\Debug\net10.0\compressed\8szpvktz79-{0}-jm6s7u3hr3-jm6s7u3hr3.gz

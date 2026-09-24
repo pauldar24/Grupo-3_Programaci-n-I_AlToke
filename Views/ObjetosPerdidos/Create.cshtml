@@ -1,0 +1,60 @@
+@model GRUPAL.Models.ObjetoPerdido
+
+@{
+    ViewData["Title"] = "Nuevo Reporte";
+}
+
+<div class="py-4">
+    <h1 class="display-6 fw-semibold">Cuéntanos qué pasó.</h1>
+    <p class="text-muted mb-4">Mientras más detalles compartas, más fácil será ayudar.</p>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="card card-body shadow-sm">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Título" class="form-label"></label>
+                <input asp-for="Título" class="form-control" placeholder="Ej. Casaca negra de cuero" />
+                <span asp-validation-for="Título" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Categoría" class="form-label"></label>
+                <select asp-for="Categoría" class="form-select">
+                    <option value="">Selecciona una categoría</option>
+                    <option>Documentos</option>
+                    <option>Electrónica</option>
+                    <option>Ropa y accesorios</option>
+                    <option>Bolsos y carteras</option>
+                    <option>Tarjetas y dinero</option>
+                    <option>Mascotas</option>
+                    <option>Llaves</option>
+                    <option>Otros</option>
+                </select>
+                <span asp-validation-for="Categoría" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <textarea asp-for="Descripcion" class="form-control" rows="4"
+                          placeholder="Cuenta dónde lo viste por última vez, cómo es, marcas, detalles..."></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Fecha" class="form-label"></label>
+                <input asp-for="Fecha" type="date" class="form-control" />
+                <span asp-validation-for="Fecha" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="Foto">Foto</label>
+                <input id="Foto" type="file" name="Foto" class="form-control" accept="image/*" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-altoke btn-lg w-100 mt-4">Publicar objeto &rarr;</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

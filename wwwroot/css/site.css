@@ -29,3 +29,16 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.btn-altoke {
+  background-color: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+
+.btn-altoke:hover,
+.btn-altoke:focus {
+  background-color: #ea580c;
+  border-color: #ea580c;
+  color: #fff;
+}
