@@ -1,0 +1,76 @@
+@model List<GRUPAL.Models.Usuario>
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+}
+
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container">
+        <h2><i class="bi bi-shield-lock"></i> Panel de Administración</h2>
+        <p class="text-muted mb-0">Gestiona los objetos y usuarios de AlToke</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-action="Index">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-action="Objetos">Objetos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-action="Usuarios" style="background-color: #FF6B00; color: white;">Usuarios</a>
+        </li>
+    </ul>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Todos los usuarios</h5>
+            <span class="badge bg-secondary">@Model.Count usuarios</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Publicaciones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td>@user.Nombre</td>
+                                    <td>@user.Correo</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">@(user.ObjetosPerdidos?.Count ?? 0)</span>
+                                    </td>
+                                    <td>
+                                        <form asp-action="EliminarUsuario" asp-route-id="@user.Id" method="post" onsubmit="return confirm('¿Eliminar este usuario? Esto podría eliminar sus objetos también.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <p>No hay usuarios registrados.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

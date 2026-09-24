@@ -2428,19 +2428,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Paul David\\.nuget\\packages\\": {}
+    "C:\\Users\\Asus\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Programacion I\\GRUPAL\\GRUPAL.csproj",
+      "projectUniqueName": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
       "projectName": "GRUPAL",
-      "projectPath": "C:\\Programacion I\\GRUPAL\\GRUPAL.csproj",
-      "packagesPath": "C:\\Users\\Paul David\\.nuget\\packages\\",
-      "outputPath": "C:\\Programacion I\\GRUPAL\\obj\\",
+      "projectPath": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
+      "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Paul David\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"

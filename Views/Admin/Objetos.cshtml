@@ -1,0 +1,106 @@
+@model List<GRUPAL.Models.ObjetoPerdido>
+@{
+    ViewData["Title"] = "Gestión de Objetos";
+}
+
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container">
+        <h2><i class="bi bi-shield-lock"></i> Panel de Administración</h2>
+        <p class="text-muted mb-0">Gestiona los objetos y usuarios de AlToke</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-action="Index">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" asp-action="Objetos" style="background-color: #FF6B00; color: white;">Objetos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-action="Usuarios">Usuarios</a>
+        </li>
+    </ul>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Todos los objetos</h5>
+            <span class="badge bg-secondary">@Model.Count objetos</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Foto</th>
+                                <th>Título</th>
+                                <th>Categoría</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.FotoUrl))
+                                        {
+                                            <img src="@item.FotoUrl" alt="Foto" style="width: 50px; height: 50px; object-fit: cover;" class="rounded" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>@item.Título</td>
+                                    <td>@item.Categoría</td>
+                                    <td>
+                                        <span class="badge @(item.Estado == GRUPAL.Models.EstadoObjeto.Perdido ? "bg-danger" : "bg-success")">
+                                            @item.Estado
+                                        </span>
+                                    </td>
+                                    <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@(item.Usuario?.Nombre ?? "N/A")</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="EditarObjeto" asp-route-id="@item.Id" class="btn btn-outline-primary" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form asp-action="CambiarEstado" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                <input type="hidden" name="nuevoEstado" value="@(item.Estado == GRUPAL.Models.EstadoObjeto.Perdido ? GRUPAL.Models.EstadoObjeto.Encontrado : GRUPAL.Models.EstadoObjeto.Perdido)" />
+                                                <button type="submit" class="btn btn-outline-warning" title="Cambiar Estado">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </button>
+                                            </form>
+                                            <form asp-action="EliminarObjeto" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este objeto?');">
+                                                <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <p>No hay objetos.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
