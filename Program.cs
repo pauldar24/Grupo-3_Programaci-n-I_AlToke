@@ -4,8 +4,11 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Render asigna el puerto vía variable de entorno PORT ────────────
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-builder.WebHost.UseUrls($"http://+:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://+:{port}");
+}
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -47,11 +50,20 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// ── Paso 5: Aplicar migraciones automáticamente al iniciar ─────────
+// ── Paso 6: Aplicar migraciones automáticamente al iniciar ─────────
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+        logger.LogInformation("✅ Migraciones aplicadas correctamente.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Error al aplicar migraciones automáticas.");
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -60,8 +72,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+else
+{
+    // Solo redirigir a HTTPS en desarrollo; en Render lo maneja el proxy
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+// ── Paso 6: Archivos estáticos (CSS, JS, imágenes) ────────────────
+// UseStaticFiles() garantiza que wwwroot se sirva correctamente en Docker
+app.UseStaticFiles();
 app.UseRouting();
 
 // El middleware de sesión debe ir ANTES de UseAuthorization

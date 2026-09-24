@@ -25,10 +25,12 @@ RUN mkdir -p /app/data
 # Copiar los archivos publicados
 COPY --from=build /app/publish .
 
-# Render asigna el puerto vía variable de entorno PORT
-ENV ASPNETCORE_URLS=http://+:${PORT:-10000}
+# Variables de entorno para producción
 ENV ASPNETCORE_ENVIRONMENT=Production
 
+# Render asigna PORT dinámicamente; la app lo lee en Program.cs
+# Exponer puerto por defecto como documentación
 EXPOSE 10000
 
+# Shell form para que $PORT se expanda correctamente en runtime
 ENTRYPOINT ["dotnet", "GRUPAL.dll"]
