@@ -3,19 +3,38 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Render asigna el puerto vía variable de entorno PORT ────────────
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+builder.WebHost.UseUrls($"http://+:{port}");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// ── Base de datos SQLite (ruta adaptada a producción) ──────────────
+var dbPath = builder.Environment.IsProduction()
+    ? "/app/data/Altoke.db"
+    : "Altoke.db";
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 // ── Paso 4: Memoria distribuida con Redis ──────────────────────────
-builder.Services.AddStackExchangeRedisCache(options =>
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+
+if (!string.IsNullOrEmpty(redisConnection))
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis")
-                            ?? "localhost:6379";
-    options.InstanceName = "AlToke_";
-});
+    // Producción: usar Redis como caché distribuido
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "AlToke_";
+    });
+}
+else
+{
+    // Desarrollo / Render sin Redis: caché en memoria
+    builder.Services.AddDistributedMemoryCache();
+}
 
 // ── Paso 4: Sesiones ───────────────────────────────────────────────
 builder.Services.AddSession(options =>
@@ -28,11 +47,17 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// ── Paso 5: Aplicar migraciones automáticamente al iniciar ─────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -53,3 +78,4 @@ app.MapControllerRoute(
 
 
 app.Run();
+
