@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj": {}
+    "C:\\Users\\user\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj": {
+    "C:\\Users\\user\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
+        "projectUniqueName": "C:\\Users\\user\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
         "projectName": "GRUPAL",
-        "projectPath": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
-        "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\obj\\",
+        "projectPath": "C:\\Users\\user\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
+        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\user\\Grupo-3_Programaci-n-I_AlToke\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -39,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
@@ -55,6 +55,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[10.0.12, )"
+            },
+            "Microsoft.Extensions.Caching.StackExchangeRedis": {
+              "target": "Package",
+              "version": "[10.0.0-*, )"
             }
           },
           "imports": [
@@ -76,7 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
