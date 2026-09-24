@@ -1,0 +1,67 @@
+@model GRUPAL.Models.ObjetoPerdido
+@{
+    ViewData["Title"] = "Editar Objeto";
+}
+
+<div class="bg-dark text-white py-4 mb-4">
+    <div class="container">
+        <h2><i class="bi bi-shield-lock"></i> Panel de Administración</h2>
+        <p class="text-muted mb-0">Editando: @Model.Título</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="EditarObjeto" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="mb-3">
+                            <label asp-for="Título" class="form-label fw-bold">Título</label>
+                            <input asp-for="Título" class="form-control" />
+                            <span asp-validation-for="Título" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Categoría" class="form-label fw-bold">Categoría</label>
+                            <select asp-for="Categoría" class="form-select">
+                                <option value="">Seleccione una categoría...</option>
+                                <option value="Electrónica">Electrónica</option>
+                                <option value="Documentos">Documentos</option>
+                                <option value="Ropa">Ropa</option>
+                                <option value="Accesorios">Accesorios</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                            <span asp-validation-for="Categoría" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Descripcion" class="form-label fw-bold">Descripción</label>
+                            <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Descripcion" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Fecha" class="form-label fw-bold">Fecha</label>
+                            <input asp-for="Fecha" type="date" class="form-control" />
+                            <span asp-validation-for="Fecha" class="text-danger"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="Estado" class="form-label fw-bold">Estado</label>
+                            <select asp-for="Estado" asp-items="Html.GetEnumSelectList<GRUPAL.Models.EstadoObjeto>()" class="form-select">
+                            </select>
+                            <span asp-validation-for="Estado" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Objetos" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-altoke text-white" style="background-color: #FF6B00;">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

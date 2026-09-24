@@ -40,6 +40,9 @@ namespace GRUPAL.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("FotoUrl")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Título")
                         .IsRequired()
                         .HasMaxLength(150)

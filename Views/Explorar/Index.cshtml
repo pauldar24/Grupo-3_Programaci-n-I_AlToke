@@ -1,0 +1,193 @@
+@model List<GRUPAL.Models.ObjetoPerdido>
+
+@{
+    ViewData["Title"] = "Explorar objetos";
+}
+
+@section FullWidth {
+    <div class="hero-section text-center text-white py-5" style="min-height: 260px;">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-2 animate-fade-in">
+                <i class="bi bi-search me-2"></i>Explorar objetos
+            </h1>
+            <p class="lead mb-4" style="opacity: 0.9;">
+                Busca entre todos los objetos reportados por la comunidad USMP
+            </p>
+
+            @* ═══ Barra de búsqueda ═══ *@
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form method="get" asp-controller="Explorar" asp-action="Index">
+                        <div class="input-group input-group-lg shadow">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="buscar" class="form-control border-0"
+                                   placeholder="Buscar por título o descripción..."
+                                   value="@ViewBag.BuscarActual" />
+
+                            @* Mantener filtros activos al buscar *@
+                            @if (!string.IsNullOrEmpty((string?)ViewBag.CategoriaActual))
+                            {
+                                <input type="hidden" name="categoria" value="@ViewBag.CategoriaActual" />
+                            }
+                            @if (!string.IsNullOrEmpty((string?)ViewBag.EstadoActual))
+                            {
+                                <input type="hidden" name="estado" value="@ViewBag.EstadoActual" />
+                            }
+
+                            <button class="btn btn-light fw-semibold px-4" type="submit">Buscar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ═══ Filtros ═══ *@
+<div class="container mt-4">
+    <div class="row align-items-center mb-4">
+
+        @* Filtros de categoría y estado *@
+        <div class="col-md-8">
+            <form method="get" asp-controller="Explorar" asp-action="Index" class="d-flex flex-wrap gap-2 align-items-center">
+
+                @* Conservar texto de búsqueda *@
+                @if (!string.IsNullOrEmpty((string?)ViewBag.BuscarActual))
+                {
+                    <input type="hidden" name="buscar" value="@ViewBag.BuscarActual" />
+                }
+
+                <select name="categoria" class="form-select form-select-sm" style="width: auto; min-width: 170px;">
+                    <option value="">Todas las categorías</option>
+                    @{
+                        var categorias = new[] { "Electrónicos", "Documentos", "Ropa", "Accesorios", "Llaves", "Mascotas", "Otros" };
+                    }
+                    @foreach (var cat in categorias)
+                    {
+                        <option value="@cat" selected="@(ViewBag.CategoriaActual == cat ? "selected" : null)">@cat</option>
+                    }
+                </select>
+
+                <select name="estado" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
+                    <option value="">Todos los estados</option>
+                    <option value="Perdido" selected="@(ViewBag.EstadoActual == "Perdido" ? "selected" : null)">🔴 Perdido</option>
+                    <option value="Encontrado" selected="@(ViewBag.EstadoActual == "Encontrado" ? "selected" : null)">🟢 Encontrado</option>
+                </select>
+
+                <button type="submit" class="btn btn-sm btn-altoke">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+
+                @if (!string.IsNullOrEmpty((string?)ViewBag.BuscarActual) ||
+                     !string.IsNullOrEmpty((string?)ViewBag.CategoriaActual) ||
+                     !string.IsNullOrEmpty((string?)ViewBag.EstadoActual))
+                {
+                    <a asp-controller="Explorar" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>Limpiar
+                    </a>
+                }
+            </form>
+        </div>
+
+        @* Contador de resultados *@
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <span class="text-muted">
+                <i class="bi bi-grid-3x3-gap me-1"></i>
+                <strong>@ViewBag.TotalResultados</strong> objeto(s) encontrado(s)
+            </span>
+        </div>
+    </div>
+
+    @* ═══ Grilla de tarjetas ═══ *@
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var obj in Model)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card card-objeto h-100 border-0">
+
+                        @* Imagen o placeholder *@
+                        @if (!string.IsNullOrEmpty(obj.FotoUrl))
+                        {
+                            <img src="@obj.FotoUrl" class="card-img-top" alt="@obj.Título" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height: 200px; border-radius: 12px 12px 0 0;">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+
+                        @* Badge de estado sobre la imagen *@
+                        <div class="position-absolute top-0 end-0 m-2">
+                            @if (obj.Estado == GRUPAL.Models.EstadoObjeto.Perdido)
+                            {
+                                <span class="badge badge-estado-perdido shadow-sm">
+                                    <i class="bi bi-exclamation-circle me-1"></i>Perdido
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-estado-encontrado shadow-sm">
+                                    <i class="bi bi-check-circle me-1"></i>Encontrado
+                                </span>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge badge-categoria mb-2 align-self-start">
+                                @obj.Categoría
+                            </span>
+                            <h5 class="card-title fw-bold">@obj.Título</h5>
+                            <p class="card-text text-muted flex-grow-1">
+                                @(obj.Descripcion.Length > 120 ? obj.Descripcion.Substring(0, 120) + "..." : obj.Descripcion)
+                            </p>
+                            <hr class="my-2" />
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>@obj.Fecha.ToString("dd/MM/yyyy")
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>@(obj.Usuario?.Nombre ?? "Anónimo")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @* Estado vacío *@
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-search" style="font-size: 4rem; color: #ced4da;"></i>
+            <h4 class="mt-3 fw-bold">No se encontraron objetos</h4>
+
+            @if (!string.IsNullOrEmpty((string?)ViewBag.BuscarActual) ||
+                 !string.IsNullOrEmpty((string?)ViewBag.CategoriaActual) ||
+                 !string.IsNullOrEmpty((string?)ViewBag.EstadoActual))
+            {
+                <p class="text-muted">
+                    No hay resultados para los filtros seleccionados.<br />
+                    Intenta con otros términos o
+                    <a asp-controller="Explorar" asp-action="Index" class="text-decoration-none" style="color: #FF6B00;">limpia los filtros</a>.
+                </p>
+            }
+            else
+            {
+                <p class="text-muted">
+                    Aún no hay objetos publicados en la plataforma.<br />
+                    ¡Sé el primero en reportar uno!
+                </p>
+                <a asp-controller="ObjetosPerdidos" asp-action="Create" class="btn btn-altoke mt-2">
+                    <i class="bi bi-plus-lg me-1"></i>Publicar objeto
+                </a>
+            }
+        </div>
+    }
+</div>

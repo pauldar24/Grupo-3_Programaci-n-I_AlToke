@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Cómo funciona";
+}
+
+@section FullWidth {
+    <div class="hero-section text-center text-white py-5">
+        <div class="container py-3">
+            <h1 class="display-5 fw-bold mb-3">¿Cómo funciona AlToke?</h1>
+            <p class="lead" style="opacity: 0.9;">Tres pasos simples para recuperar lo que perdiste</p>
+        </div>
+    </div>
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+        @* Paso 1 *@
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="mb-3">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background-color: #fff3e0;">
+                        <i class="bi bi-pencil-square" style="font-size: 2rem; color: #FF6B00;"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold">1. Publica tu reporte</h4>
+                <p class="text-muted">Describe el objeto que perdiste con el mayor detalle posible: color, marca, tamaño y dónde lo viste por última vez. Puedes agregar una foto para hacerlo más fácil.</p>
+            </div>
+        </div>
+
+        @* Paso 2 *@
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="mb-3">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background-color: #fff3e0;">
+                        <i class="bi bi-people" style="font-size: 2rem; color: #FF6B00;"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold">2. La comunidad ayuda</h4>
+                <p class="text-muted">Tu publicación será visible para toda la comunidad AlToke. Alguien que haya encontrado tu objeto podrá contactarte y coordinar la devolución.</p>
+            </div>
+        </div>
+
+        @* Paso 3 *@
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="mb-3">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background-color: #fff3e0;">
+                        <i class="bi bi-hand-thumbs-up" style="font-size: 2rem; color: #FF6B00;"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold">3. ¡Recupéralo!</h4>
+                <p class="text-muted">Coordina la entrega de manera segura y marca tu objeto como encontrado. ¡Celebra la buena acción de la comunidad!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a asp-controller="ObjetosPerdidos" asp-action="Create" class="btn btn-altoke btn-lg px-5">
+            <i class="bi bi-plus-circle me-2"></i>Publicar un objeto ahora
+        </a>
+    </div>
+</div>

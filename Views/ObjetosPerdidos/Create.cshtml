@@ -1,0 +1,75 @@
+@model GRUPAL.Models.ObjetoPerdido
+
+@{
+    ViewData["Title"] = "Nuevo Reporte";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <h2 class="fw-bold mb-1">Cuéntanos qué pasó.</h2>
+            <p class="text-muted mb-4">Mientras más detalles compartas, más fácil será ayudar.</p>
+
+            <form asp-action="Create" asp-controller="ObjetosPerdidos" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                @* Fila 1: Título y Categoría *@
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Título" class="form-label fw-semibold">Título</label>
+                        <input asp-for="Título" class="form-control" placeholder="Ej: Mochila negra perdida en el parque" required />
+                        <span asp-validation-for="Título" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Categoría" class="form-label fw-semibold">Categoría</label>
+                        <select asp-for="Categoría" class="form-select" required>
+                            <option value="" disabled selected>Selecciona una categoría</option>
+                            <option value="Electrónicos">Electrónicos</option>
+                            <option value="Documentos">Documentos</option>
+                            <option value="Ropa">Ropa</option>
+                            <option value="Accesorios">Accesorios</option>
+                            <option value="Llaves">Llaves</option>
+                            <option value="Mascotas">Mascotas</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                        <span asp-validation-for="Categoría" class="text-danger"></span>
+                    </div>
+                </div>
+
+                @* Fila 2: Descripción detallada *@
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label fw-semibold">Descripción detallada</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="4"
+                              placeholder="Describe el objeto con el mayor detalle posible: color, marca, tamaño, dónde lo viste por última vez..." required></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                @* Fila 3: Fecha y Foto *@
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Fecha" class="form-label fw-semibold">Fecha</label>
+                        <input asp-for="Fecha" type="date" class="form-control" required />
+                        <span asp-validation-for="Fecha" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Foto</label>
+                        <input type="file" name="foto" class="form-control" accept="image/*" />
+                    </div>
+                </div>
+
+                @* Botón de envío *@
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-lg text-white" style="background-color: #FF6B00; border-color: #FF6B00;">
+                        Publicar objeto →
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
