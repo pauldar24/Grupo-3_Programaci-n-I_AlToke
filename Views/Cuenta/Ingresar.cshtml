@@ -5,15 +5,12 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="card shadow border-0">
-                <div class="card-body p-5">
+            <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                <div class="card-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
-                             style="width: 70px; height: 70px; background-color: #FFF0E6;">
-                            <i class="bi bi-box-arrow-in-right" style="font-size: 2rem; color: #FF6B00;"></i>
-                        </div>
-                        <h3 class="fw-bold mb-1">Bienvenido de nuevo</h3>
-                        <p class="text-muted">Ingresa a tu cuenta de AlToke</p>
+                        <i class="bi bi-person-circle" style="font-size: 3rem; color: var(--altoke-orange);"></i>
+                        <h3 class="fw-bold mt-2">Ingresar</h3>
+                        <p class="text-muted">Accede a tu cuenta AlToke</p>
                     </div>
 
                     @if (ViewBag.Error != null)
@@ -25,25 +22,35 @@
                     }
 
                     <form method="post" asp-action="Ingresar">
-                        @Html.AntiForgeryToken()
                         <div class="mb-3">
-                            <label for="correo" class="form-label fw-semibold">Correo</label>
-                            <input type="email" name="correo" id="correo" class="form-control" placeholder="ejemplo@usmp.pe" required />
+                            <label for="correo" class="form-label fw-semibold">Correo electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="correo" name="correo"
+                                       placeholder="tu@correo.com" required />
+                            </div>
                         </div>
+
                         <div class="mb-4">
                             <label for="contraseña" class="form-label fw-semibold">Contraseña</label>
-                            <input type="password" name="contraseña" id="contraseña" class="form-control" placeholder="••••••••" required />
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="contraseña" name="contraseña"
+                                       placeholder="••••••••" required />
+                            </div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-lg text-white" style="background-color: #FF6B00; border-color: #FF6B00;">
-                                Iniciar sesión
-                            </button>
-                        </div>
+
+                        <button type="submit" class="btn btn-altoke w-100 py-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
+                        </button>
                     </form>
 
-                    <div class="text-center mt-4">
-                        <p class="text-muted">¿No tienes cuenta? <a asp-action="CrearCuenta" class="text-decoration-none" style="color: #FF6B00; font-weight: 600;">Regístrate</a></p>
-                    </div>
+                    <hr class="my-4" />
+
+                    <p class="text-center text-muted mb-0">
+                        ¿No tienes cuenta?
+                        <a asp-action="CrearCuenta" class="fw-semibold" style="color: var(--altoke-orange);">Crear cuenta</a>
+                    </p>
                 </div>
             </div>
         </div>

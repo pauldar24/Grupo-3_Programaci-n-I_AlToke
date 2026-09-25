@@ -122,10 +122,10 @@ public class CuentaController : Controller
         return View(usuario);
     }
 
-    // POST: Cuenta/Salir
+    // POST: Cuenta/CerrarSesion
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Salir()
+    public IActionResult CerrarSesion()
     {
         HttpContext.Session.Remove("UsuarioId");
         HttpContext.Session.Remove("UsuarioNombre");

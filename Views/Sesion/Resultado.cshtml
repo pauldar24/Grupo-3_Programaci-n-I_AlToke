@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "Sesión – Resultado";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-3">
+                        <i class="bi bi-database-check"></i> Sesión &amp; Redis
+                    </h3>
+                    <p class="lead">@ViewBag.Mensaje</p>
+
+                    <hr />
+                    <div class="btn-group" role="group">
+                        <a asp-controller="Sesion" asp-action="Guardar" asp-route-nombre="Demo"
+                           class="btn btn-success btn-sm">Guardar "Demo"</a>
+                        <a asp-controller="Sesion" asp-action="Leer"
+                           class="btn btn-primary btn-sm">Leer</a>
+                        <a asp-controller="Sesion" asp-action="Borrar"
+                           class="btn btn-outline-danger btn-sm">Borrar</a>
+                        <a asp-controller="Sesion" asp-action="Estado"
+                           class="btn btn-outline-secondary btn-sm">Estado (JSON)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
