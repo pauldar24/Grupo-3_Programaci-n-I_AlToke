@@ -105,7 +105,7 @@
                                     <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
                                     <td>@(item.Usuario?.Nombre ?? "Desconocido")</td>
                                     <td>
-                                        <a asp-controller="Home" asp-action="Detalle" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-eye"></i> Ver</a>
+                                        <a asp-controller="Admin" asp-action="EditarObjeto" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar</a>
                                     </td>
                                 </tr>
                             }

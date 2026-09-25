@@ -2,21 +2,73 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GRUPAL.Data;
 using GRUPAL.Models;
+using GRUPAL.Filters;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using System.Text.RegularExpressions;
 
 namespace GRUPAL.Controllers;
 
+[TypeFilter(typeof(AdminAuthFilter))]
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
+    private readonly Cloudinary _cloudinary;
 
-    public AdminController(ApplicationDbContext context, IWebHostEnvironment env)
+    public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env)
     {
         _context = context;
+        _config = config;
         _env = env;
+
+        var cloud = config.GetSection("Cloudinary");
+        var account = new Account(cloud["CloudName"], cloud["ApiKey"], cloud["ApiSecret"]);
+        _cloudinary = new Cloudinary(account);
     }
 
-    // GET: Admin - Dashboard
+    // ═══════════════════════════════════════════════════════════
+    //  LOGIN / LOGOUT
+    // ═══════════════════════════════════════════════════════════
+
+    [SkipAdminAuth]
+    public IActionResult Login()
+    {
+        // If already authenticated, go straight to dashboard
+        if (HttpContext.Session.GetString("IsAdmin") == "true")
+            return RedirectToAction(nameof(Index));
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [SkipAdminAuth]
+    public IActionResult Login(string password)
+    {
+        var adminPassword = _config["AdminSettings:Password"];
+        if (password == adminPassword)
+        {
+            HttpContext.Session.SetString("IsAdmin", "true");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewBag.Error = "Contraseña incorrecta. Inténtalo de nuevo.";
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear();
+        return RedirectToAction("Index", "Home");
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  DASHBOARD
+    // ═══════════════════════════════════════════════════════════
+
     public async Task<IActionResult> Index()
     {
         ViewBag.TotalObjetos = await _context.ObjetosPerdidos.CountAsync();
@@ -33,7 +85,10 @@ public class AdminController : Controller
         return View(recientes);
     }
 
-    // GET: Admin/Objetos
+    // ═══════════════════════════════════════════════════════════
+    //  OBJETOS
+    // ═══════════════════════════════════════════════════════════
+
     public async Task<IActionResult> Objetos()
     {
         var objetos = await _context.ObjetosPerdidos
@@ -43,7 +98,10 @@ public class AdminController : Controller
         return View(objetos);
     }
 
-    // GET: Admin/Usuarios
+    // ═══════════════════════════════════════════════════════════
+    //  USUARIOS
+    // ═══════════════════════════════════════════════════════════
+
     public async Task<IActionResult> Usuarios()
     {
         var usuarios = await _context.Usuarios
@@ -53,7 +111,10 @@ public class AdminController : Controller
         return View(usuarios);
     }
 
-    // GET: Admin/EditarObjeto/5
+    // ═══════════════════════════════════════════════════════════
+    //  EDITAR OBJETO
+    // ═══════════════════════════════════════════════════════════
+
     public async Task<IActionResult> EditarObjeto(int id)
     {
         var objeto = await _context.ObjetosPerdidos.FindAsync(id);
@@ -61,7 +122,6 @@ public class AdminController : Controller
         return View(objeto);
     }
 
-    // POST: Admin/EditarObjeto
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditarObjeto(ObjetoPerdido objeto)
@@ -83,7 +143,10 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Objetos));
     }
 
-    // POST: Admin/EliminarObjeto/5
+    // ═══════════════════════════════════════════════════════════
+    //  ELIMINAR OBJETO
+    // ═══════════════════════════════════════════════════════════
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarObjeto(int id)
@@ -91,20 +154,18 @@ public class AdminController : Controller
         var objeto = await _context.ObjetosPerdidos.FindAsync(id);
         if (objeto == null) return NotFound();
 
-        // Delete photo file if exists
-        if (!string.IsNullOrEmpty(objeto.FotoUrl))
-        {
-            var filePath = Path.Combine(_env.WebRootPath, objeto.FotoUrl.TrimStart('/'));
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
-        }
+        // Limpiar foto (Cloudinary o local)
+        await EliminarFotoAsync(objeto.FotoUrl);
 
         _context.ObjetosPerdidos.Remove(objeto);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Objetos));
     }
 
-    // POST: Admin/CambiarEstado/5
+    // ═══════════════════════════════════════════════════════════
+    //  CAMBIAR ESTADO
+    // ═══════════════════════════════════════════════════════════
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CambiarEstado(int id, EstadoObjeto nuevoEstado)
@@ -117,16 +178,57 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Objetos));
     }
 
-    // POST: Admin/EliminarUsuario/5
+    // ═══════════════════════════════════════════════════════════
+    //  ELIMINAR USUARIO (con limpieza de fotos)
+    // ═══════════════════════════════════════════════════════════
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarUsuario(int id)
     {
-        var usuario = await _context.Usuarios.FindAsync(id);
+        var usuario = await _context.Usuarios
+            .Include(u => u.ObjetosPerdidos)
+            .FirstOrDefaultAsync(u => u.Id == id);
         if (usuario == null) return NotFound();
+
+        // Limpiar fotos de todos los objetos del usuario antes del cascade delete
+        if (usuario.ObjetosPerdidos != null)
+        {
+            foreach (var obj in usuario.ObjetosPerdidos)
+            {
+                await EliminarFotoAsync(obj.FotoUrl);
+            }
+        }
 
         _context.Usuarios.Remove(usuario);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Usuarios));
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  HELPER: Eliminar foto (Cloudinary o disco local)
+    // ═══════════════════════════════════════════════════════════
+
+    private async Task EliminarFotoAsync(string? fotoUrl)
+    {
+        if (string.IsNullOrEmpty(fotoUrl)) return;
+
+        if (fotoUrl.Contains("cloudinary", StringComparison.OrdinalIgnoreCase))
+        {
+            // Extraer public_id de la URL de Cloudinary
+            var match = Regex.Match(fotoUrl, @"/upload/(?:v\d+/)?(.+)\.\w+$");
+            if (match.Success)
+            {
+                var publicId = match.Groups[1].Value;
+                await _cloudinary.DestroyAsync(new DeletionParams(publicId));
+            }
+        }
+        else if (fotoUrl.StartsWith("/uploads/"))
+        {
+            // Archivo local (legacy) — intentar eliminar
+            var filePath = Path.Combine(_env.WebRootPath, fotoUrl.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+        }
     }
 }

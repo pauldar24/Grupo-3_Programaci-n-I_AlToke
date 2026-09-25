@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "1UjSQ84E5Jg=",
+  "dgSpecHash": "w5r7XJEiSYk=",
   "success": true,
   "projectFilePath": "C:\\Users\\Asus\\Grupo-3_Programaci-n-I_AlToke\\GRUPAL.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Asus\\.nuget\\packages\\cloudinarydotnet\\1.29.3\\cloudinarydotnet.1.29.3.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\microsoft.build.framework\\18.0.2\\microsoft.build.framework.18.0.2.nupkg.sha512",
     "C:\\Users\\Asus\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.11.0\\microsoft.codeanalysis.analyzers.3.11.0.nupkg.sha512",

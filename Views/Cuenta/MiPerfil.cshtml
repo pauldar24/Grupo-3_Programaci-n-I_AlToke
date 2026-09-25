@@ -1,0 +1,89 @@
+@model GRUPAL.Models.Usuario
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container py-4 mb-5">
+    <div class="row">
+        <!-- Sidebar Perfil -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person text-secondary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">@Model.Nombre</h4>
+                    <p class="text-muted mb-3">@Model.Correo</p>
+                    
+                    <hr />
+                    
+                    <div class="row text-center mt-3">
+                        <div class="col-4">
+                            <h5 class="fw-bold mb-0 text-primary">@Model.PublicacionesActivas</h5>
+                            <small class="text-muted">Activas</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="fw-bold mb-0 text-success">@Model.HistoriasResueltas</h5>
+                            <small class="text-muted">Resueltos</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="fw-bold mb-0 text-warning">@Model.BuenasAcciones</h5>
+                            <small class="text-muted">Acciones</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0">Mis Publicaciones</h3>
+                <a asp-controller="ObjetosPerdidos" asp-action="Create" class="btn btn-altoke btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo
+                </a>
+            </div>
+
+            @if (Model.ObjetosPerdidos != null && Model.ObjetosPerdidos.Any())
+            {
+                <div class="row">
+                    @foreach (var obj in Model.ObjetosPerdidos.OrderByDescending(o => o.Fecha))
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 border-0 shadow-sm card-objeto">
+                                @if (!string.IsNullOrEmpty(obj.FotoUrl))
+                                {
+                                    <img src="@obj.FotoUrl" class="card-img-top" alt="@obj.Título" style="height: 150px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <span class="badge @(obj.Estado == GRUPAL.Models.EstadoObjeto.Perdido ? "bg-danger" : "bg-success") mb-2">
+                                        @obj.Estado
+                                    </span>
+                                    <h5 class="card-title fw-bold">@obj.Título</h5>
+                                    <p class="card-text text-muted small">@obj.Fecha.ToString("dd/MM/yyyy") - @obj.Categoría</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm text-center py-5">
+                    <div class="card-body">
+                        <i class="bi bi-inbox text-muted display-4 d-block mb-3"></i>
+                        <h5>Aún no tienes publicaciones</h5>
+                        <p class="text-muted mb-4">Ayuda a la comunidad publicando objetos que hayas encontrado o reporta si perdiste algo.</p>
+                        <a asp-controller="ObjetosPerdidos" asp-action="Create" class="btn btn-outline-primary">Publicar ahora</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
