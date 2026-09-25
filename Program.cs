@@ -21,7 +21,7 @@ var dbPath = builder.Environment.IsProduction()
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
-// ── Paso 4: Memoria distribuida con Redis ──────────────────────────
+// ── Paso 4: Memoria distribuida con Redis ────────────────────────────
 var redisConnection = builder.Configuration.GetConnectionString("Redis");
 
 if (!string.IsNullOrEmpty(redisConnection))
@@ -39,7 +39,7 @@ else
     builder.Services.AddDistributedMemoryCache();
 }
 
-// ── Paso 4: Sesiones ───────────────────────────────────────────────
+// ── Paso 4: Sesiones ──────────────────────────────────────────────────
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -50,13 +50,13 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// ── Paso 6: Aplicar migraciones automáticamente al iniciar ─────────
+// ── Paso 6: Aplicar migraciones automáticamente al iniciar y Seed Data
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Database.Migrate();
         logger.LogInformation("✅ Migraciones aplicadas correctamente.");
     }
@@ -64,6 +64,9 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogError(ex, "❌ Error al aplicar migraciones automáticas.");
     }
+
+    // Ejecutar Seeder para poblar datos si está vacío
+    await DbSeeder.SeedAsync(db);
 }
 
 // Configure the HTTP request pipeline.
@@ -85,7 +88,6 @@ app.UseRouting();
 
 // El middleware de sesión debe ir ANTES de UseAuthorization
 app.UseSession();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -95,6 +97,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-
 app.Run();
-

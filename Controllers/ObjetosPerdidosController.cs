@@ -1,23 +1,31 @@
 using Microsoft.AspNetCore.Mvc;
 using GRUPAL.Data;
 using GRUPAL.Models;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace GRUPAL.Controllers;
 
 public class ObjetosPerdidosController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly IWebHostEnvironment _env;
+    private readonly Cloudinary _cloudinary;
 
-    public ObjetosPerdidosController(ApplicationDbContext context, IWebHostEnvironment env)
+    public ObjetosPerdidosController(ApplicationDbContext context, IConfiguration config)
     {
         _context = context;
-        _env = env;
+
+        var cloud = config.GetSection("Cloudinary");
+        var account = new Account(cloud["CloudName"], cloud["ApiKey"], cloud["ApiSecret"]);
+        _cloudinary = new Cloudinary(account);
     }
 
     // GET: ObjetosPerdidos/Create
     public IActionResult Create()
     {
+        if (!HttpContext.Session.GetInt32("UsuarioId").HasValue)
+            return RedirectToAction("Ingresar", "Cuenta");
+            
         return View();
     }
 
@@ -26,6 +34,10 @@ public class ObjetosPerdidosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ObjetoPerdido objeto, IFormFile? foto)
     {
+        var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+        if (!usuarioId.HasValue)
+            return RedirectToAction("Ingresar", "Cuenta");
+
         // Remover validaciones de navegación que no vienen del formulario
         ModelState.Remove("Usuario");
         ModelState.Remove("Ubicacion");
@@ -36,41 +48,26 @@ public class ObjetosPerdidosController : Controller
             return View(objeto);
         }
 
-        // --- Usuario hardcodeado temporalmente (sin Login aún) ---
-        // Asegurarse de que exista un usuario con Id = 1 en la BD
-        var usuarioExiste = await _context.Usuarios.FindAsync(1);
-        if (usuarioExiste == null)
-        {
-            // Crear usuario temporal de prueba
-            var usuarioTemporal = new Usuario
-            {
-                Nombre = "Usuario Temporal",
-                Correo = "temp@altoke.pe",
-                Contraseña = "temporal123"
-            };
-            _context.Usuarios.Add(usuarioTemporal);
-            await _context.SaveChangesAsync();
-        }
-
-        objeto.UsuarioId = 1;
+        objeto.UsuarioId = usuarioId.Value;
         objeto.Estado = EstadoObjeto.Perdido;
-        objeto.Ubicacion = "No especificada"; // Campo requerido en BD, se llenará cuando se implemente
+        objeto.Ubicacion = "No especificada";
 
-        // Procesar la foto si se subió una
+        // Subir foto a Cloudinary
         if (foto != null && foto.Length > 0)
         {
-            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
-            Directory.CreateDirectory(uploadsFolder); // Crear carpeta si no existe
-
-            var nombreArchivo = Guid.NewGuid().ToString() + Path.GetExtension(foto.FileName);
-            var rutaCompleta = Path.Combine(uploadsFolder, nombreArchivo);
-
-            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+            using var stream = foto.OpenReadStream();
+            var uploadParams = new ImageUploadParams
             {
-                await foto.CopyToAsync(stream);
-            }
+                File = new FileDescription(foto.FileName, stream),
+                Folder = "altoke/objetos",
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
+            };
 
-            objeto.FotoUrl = "/uploads/" + nombreArchivo;
+            var result = await _cloudinary.UploadAsync(uploadParams);
+            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                objeto.FotoUrl = result.SecureUrl.ToString();
+            }
         }
 
         _context.ObjetosPerdidos.Add(objeto);

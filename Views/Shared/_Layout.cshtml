@@ -41,21 +41,42 @@
                             <i class="bi bi-plus-lg me-1"></i>Publicar objeto
                         </a>
                     </div>
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">
-                                <i class="bi bi-shield-lock me-1"></i>Admin
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="MiPerfil">Mi perfil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="Ingresar">Ingresar</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="CrearCuenta">Crear cuenta</a>
-                        </li>
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-2">
+                        @if (Context.Session.GetString("IsAdmin") == "true")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-shield-lock me-1"></i>Admin
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Admin" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm mt-1">Salir Admin</button>
+                                </form>
+                            </li>
+                        }
+                        @if (Context.Session.GetInt32("UsuarioId").HasValue)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="MiPerfil">
+                                    <i class="bi bi-person-circle me-1"></i>@Context.Session.GetString("UsuarioNombre")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm mt-1">Cerrar sesión</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="Ingresar">Ingresar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="CrearCuenta">Crear cuenta</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
