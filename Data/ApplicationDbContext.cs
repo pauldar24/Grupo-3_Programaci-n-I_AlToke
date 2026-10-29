@@ -12,6 +12,10 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<ObjetoPerdido> ObjetosPerdidos => Set<ObjetoPerdido>();
+    public DbSet<ObjetoFavorito> Favoritos => Set<ObjetoFavorito>();
+    public DbSet<MensajeContacto> MensajesContacto => Set<MensajeContacto>();
+    public DbSet<SolicitudRecuperacion> SolicitudesRecuperacion => Set<SolicitudRecuperacion>();
+    public DbSet<ArticuloAyuda> ArticulosAyuda => Set<ArticuloAyuda>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +41,20 @@ public class ApplicationDbContext : DbContext
                   .WithMany(u => u.ObjetosPerdidos)
                   .HasForeignKey(o => o.UsuarioId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ObjetoFavorito>(entity =>
+        {
+            entity.HasIndex(f => new { f.UsuarioId, f.ObjetoPerdidoId }).IsUnique();
+            entity.HasOne(f => f.Usuario).WithMany().HasForeignKey(f => f.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(f => f.ObjetoPerdido).WithMany().HasForeignKey(f => f.ObjetoPerdidoId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<SolicitudRecuperacion>(entity =>
+        {
+            entity.HasIndex(s => new { s.SolicitanteId, s.ObjetoPerdidoId }).IsUnique();
+            entity.HasOne(s => s.Solicitante).WithMany().HasForeignKey(s => s.SolicitanteId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(s => s.ObjetoPerdido).WithMany().HasForeignKey(s => s.ObjetoPerdidoId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(s => s.Estado).HasConversion<int>();
         });
     }
 }
