@@ -81,8 +81,9 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "❌ Error al aplicar migraciones automáticas.");
     }
 
-    // Cargar ejemplos exclusivamente cuando se solicite (nunca borrar registros de usuarios).
-    if (app.Configuration.GetValue<bool>("SeedDemoData") && app.Environment.IsDevelopment())
+    // Cargar ejemplos al habilitarlo, también en producción. El seeder solo actúa
+    // cuando las tablas de usuarios y objetos están vacías; nunca borra datos existentes.
+    if (app.Configuration.GetValue<bool>("SeedDemoData"))
         await DbSeeder.SeedAsync(db);
 }
 
