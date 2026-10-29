@@ -482,3 +482,15 @@ body {
   margin: 0 auto 1.5rem auto;
   color: var(--altoke-gray);
 }
+/* Funcionalidades añadidas: siempre se conserva la identidad visual AlToke. */
+.text-altoke { color: var(--altoke-orange) !important; }
+.btn-outline-altoke { border: 1px solid var(--altoke-orange); color: var(--altoke-orange); border-radius: 50rem; font-weight: 600; }
+.btn-outline-altoke:hover { background: var(--altoke-orange); color: #fff; }
+.altoke-photo-placeholder { min-height: 190px; display: flex; align-items: center; justify-content: center; background: #fff2e8; color: #ff8533; font-size: 3rem; }
+.pagination .page-item.active .page-link { background: var(--altoke-orange); border-color: var(--altoke-orange); }
+.pagination .page-link { color: var(--altoke-orange); }
+.altoke-suggestions { position: relative; z-index: 10; text-align: left; background: white; border-radius: 0 0 14px 14px; overflow: hidden; }
+.altoke-suggestion { display: block; padding: .6rem 1rem; border-bottom: 1px solid #f4f4f4; text-decoration: none; color: #222; }
+.altoke-suggestion:hover { background: #fff3eb; }
+.altoke-suggestion strong, .altoke-suggestion small { display: block; }
+.altoke-suggestion small { color: #757575; }

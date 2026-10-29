@@ -87,7 +87,7 @@ public class ObjetosPerdidosController : Controller
         }
         _context.ObjetosPerdidos.Add(objeto);
         await _context.SaveChangesAsync();
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Detalle", "Explorar", new { id = objeto.Id });
     }
 
     public async Task<IActionResult> Editar(int id)
