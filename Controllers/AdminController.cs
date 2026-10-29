@@ -95,7 +95,8 @@ public class AdminController : Controller
 
         return View(recientes);
     }
-    // ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
     //  OBJETOS
     // ═══════════════════════════════════════════════════════════
 
@@ -209,7 +210,11 @@ public class AdminController : Controller
                 await EliminarFotoAsync(obj.FotoUrl);
             }
         }
-_context.Usuarios.Remove(usuario);
+
+        var solicitudesUsuario = await _context.SolicitudesRecuperacion
+            .Where(s => s.SolicitanteId == usuario.Id).ToListAsync();
+        _context.SolicitudesRecuperacion.RemoveRange(solicitudesUsuario);
+        _context.Usuarios.Remove(usuario);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Usuarios));
     }

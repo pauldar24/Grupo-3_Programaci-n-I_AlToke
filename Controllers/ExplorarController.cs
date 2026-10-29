@@ -38,6 +38,7 @@ public class ExplorarController(ApplicationDbContext db, RecomendadorObjetos rec
         var objeto = await db.ObjetosPerdidos.AsNoTracking().Include(o => o.Usuario).FirstOrDefaultAsync(o => o.Id == id);
         if (objeto is null) return NotFound();
         var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+        ViewBag.YaSolicito = usuarioId.HasValue && await db.SolicitudesRecuperacion.AnyAsync(r => r.SolicitanteId == usuarioId.Value && r.ObjetoPerdidoId == id);
         ViewBag.EsFavorito = usuarioId.HasValue && await db.Favoritos.AnyAsync(f => f.UsuarioId == usuarioId.Value && f.ObjetoPerdidoId == id);
         ViewBag.Recomendados = await recomendador.RecomendarAsync(usuarioId, id, 3);
         return View(objeto);
