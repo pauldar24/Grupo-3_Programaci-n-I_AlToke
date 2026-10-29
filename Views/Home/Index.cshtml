@@ -142,7 +142,7 @@
                             <div class="mb-2">
                                 <span class="badge badge-categoria">@o.Categoría</span>
                             </div>
-                            <h5 class="card-title fw-bold text-dark mb-2">@o.Título</h5>
+                            <h5 class="card-title fw-bold text-dark mb-2"><a asp-controller="Explorar" asp-action="Detalle" asp-route-id="@o.Id" class="stretched-link text-decoration-none text-dark">@o.Título</a></h5>
                             <p class="card-text text-muted flex-grow-1">
                                 @{
                                     var desc = o.Descripcion ?? "";

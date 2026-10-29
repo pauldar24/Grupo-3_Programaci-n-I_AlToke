@@ -76,7 +76,7 @@
                                     @foreach (var obj in Model.ObjetosPerdidos)
                                     {
                                         <tr>
-                                            <td class="fw-semibold">@obj.Título</td>
+                                            <td class="fw-semibold"><a asp-controller="Explorar" asp-action="Detalle" asp-route-id="@obj.Id" class="text-decoration-none text-dark">@obj.Título</a></td>
                                             <td><span class="badge-categoria">@obj.Categoría</span></td>
                                             <td class="text-muted">@obj.Fecha.ToString("dd/MM/yyyy")</td>
                                             <td>

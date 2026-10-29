@@ -22,8 +22,9 @@
                             <span class="input-group-text bg-white border-0">
                                 <i class="bi bi-search text-muted"></i>
                             </span>
-                            <input type="text" name="buscar" class="form-control border-0"
-                                   placeholder="Buscar por título o descripción..."
+                            <input type="search" name="buscar" id="buscarObjetos" class="form-control border-0"
+                                   placeholder="Buscar por título, ubicación o descripción..." autocomplete="off"
+                                   aria-label="Buscar objetos" aria-controls="sugerenciasObjetos"
                                    value="@ViewBag.BuscarActual" />
 
                             @* Mantener filtros activos al buscar *@
@@ -39,6 +40,7 @@
                             <button class="btn btn-light fw-semibold px-4" type="submit">Buscar</button>
                         </div>
                     </form>
+                    <div id="sugerenciasObjetos" class="altoke-suggestions shadow-sm" aria-live="polite"></div>
                 </div>
             </div>
         </div>
@@ -142,7 +144,7 @@
                             <span class="badge badge-categoria mb-2 align-self-start">
                                 @obj.Categoría
                             </span>
-                            <h5 class="card-title fw-bold">@obj.Título</h5>
+                            <h5 class="card-title fw-bold"><a asp-controller="Explorar" asp-action="Detalle" asp-route-id="@obj.Id" class="text-decoration-none text-dark stretched-link">@obj.Título</a></h5>
                             <p class="card-text text-muted flex-grow-1">
                                 @(obj.Descripcion.Length > 120 ? obj.Descripcion.Substring(0, 120) + "..." : obj.Descripcion)
                             </p>
@@ -191,3 +193,18 @@
         </div>
     }
 </div>
+
+@if ((int)ViewBag.TotalPaginas > 1)
+{
+    <nav aria-label="Páginas de avisos" class="my-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.Pagina ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-buscar="@ViewBag.BuscarActual" asp-route-categoria="@ViewBag.CategoriaActual" asp-route-estado="@ViewBag.EstadoActual">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+<script src="~/js/busqueda.js" asp-append-version="true" defer></script>
