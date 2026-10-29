@@ -57,6 +57,10 @@
                         }
                         @if (Context.Session.GetInt32("UsuarioId").HasValue)
                         {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Favoritos" asp-action="Index">Favoritos</a></li>
+                        }
+                        @if (Context.Session.GetInt32("UsuarioId").HasValue)
+                        {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Cuenta" asp-action="MiPerfil">
                                     <i class="bi bi-person-circle me-1"></i>@Context.Session.GetString("UsuarioNombre")

@@ -1,11 +1,12 @@
 using GRUPAL.Data;
 using GRUPAL.Models;
+using GRUPAL.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GRUPAL.Controllers;
 
-public class ExplorarController(ApplicationDbContext db) : Controller
+public class ExplorarController(ApplicationDbContext db, RecomendadorObjetos recomendador) : Controller
 {
     private const int PorPagina = 9;
 
@@ -35,7 +36,11 @@ public class ExplorarController(ApplicationDbContext db) : Controller
     public async Task<IActionResult> Detalle(int id)
     {
         var objeto = await db.ObjetosPerdidos.AsNoTracking().Include(o => o.Usuario).FirstOrDefaultAsync(o => o.Id == id);
-        return objeto is null ? NotFound() : View(objeto);
+        if (objeto is null) return NotFound();
+        var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+        ViewBag.EsFavorito = usuarioId.HasValue && await db.Favoritos.AnyAsync(f => f.UsuarioId == usuarioId.Value && f.ObjetoPerdidoId == id);
+        ViewBag.Recomendados = await recomendador.RecomendarAsync(usuarioId, id, 3);
+        return View(objeto);
     }
 
     [HttpGet]

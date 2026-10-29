@@ -16,6 +16,19 @@
             <p>@Model.Descripcion</p>
             <p><strong>Estado:</strong> @Model.Estado</p>
             <p><strong>Publicado por:</strong> @Model.Usuario?.Nombre</p>
+            <form asp-controller="Favoritos" asp-action="Alternar" method="post" class="my-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-outline-altoke"><i class="bi bi-bookmark-heart"></i> @(ViewBag.EsFavorito ? "Quitar de favoritos" : "Guardar en favoritos")</button>
+            </form>
+            @if (ViewBag.Recomendados is List<GRUPAL.Models.ObjetoPerdido> recomendados && recomendados.Any())
+            {
+                <h3 class="h5 fw-bold mt-4">Objetos relacionados</h3>
+                @foreach (var relacionado in recomendados)
+                {
+                    <a asp-action="Detalle" asp-route-id="@relacionado.Id" class="d-block text-decoration-none text-dark border rounded p-2 mb-2"><strong>@relacionado.Título</strong><small class="d-block text-muted">@relacionado.Categoría · @relacionado.Ubicacion</small></a>
+                }
+            }
             @if (Context.Session.GetInt32("UsuarioId") == Model.UsuarioId)
             {
                 <a asp-controller="ObjetosPerdidos" asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-outline-altoke">Editar publicación</a>
