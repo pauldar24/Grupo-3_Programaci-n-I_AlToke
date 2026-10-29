@@ -1,6 +1,7 @@
 using GRUPAL.Data;
 using Microsoft.EntityFrameworkCore;
 using GRUPAL.Services;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddScoped<RecomendadorObjetos>();
 builder.Services.AddSingleton<SentimientoService>();
 builder.Services.AddScoped<AsistenteAlToke>();
 builder.Services.AddHttpClient();
+builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "AlToke - API de objetos", Version = "v1" }));
 
 // ── Base de datos SQLite (ruta adaptada a producción) ──────────────
 var dbPath = builder.Environment.IsProduction()
@@ -79,6 +81,11 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -100,6 +107,7 @@ app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
