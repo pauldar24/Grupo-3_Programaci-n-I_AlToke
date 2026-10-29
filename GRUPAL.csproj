@@ -12,5 +12,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.11" />
+    <PackageReference Include="Microsoft.ML" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ML/comentarios_entrenamiento.csv" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
