@@ -1,0 +1,21 @@
+@model GRUPAL.Models.MensajeContacto
+@{
+    ViewData["Title"] = "Contacto";
+}
+<div class="container py-5"><div class="row justify-content-center g-4"><div class="col-lg-5">
+    <span class="badge badge-categoria mb-3">Estamos para ayudarte</span>
+    <h1 class="fw-bold">Conversemos sobre AlToke</h1>
+    <p class="text-muted">¿Tienes una consulta o necesitas ayuda con un reporte? Escríbenos para que el equipo pueda revisarlo.</p>
+    <p><i class="bi bi-envelope text-altoke me-2"></i> contacto@altoke.pe</p>
+    <p class="small text-muted">No compartas contraseñas, números de documento ni datos bancarios.</p>
+</div><div class="col-lg-7"><div class="card border-0 shadow-sm rounded-4 p-4">
+    @if (TempData["Exito"] is string exito) { <div class="alert alert-success">@exito</div> }
+    <form asp-action="Contacto" method="post">
+        @Html.AntiForgeryToken()<div asp-validation-summary="All" class="text-danger mb-2"></div>
+        <div class="row"><div class="col-md-6 mb-3"><label asp-for="Nombre" class="form-label">Nombre</label><input asp-for="Nombre" class="form-control" maxlength="100" required /></div><div class="col-md-6 mb-3"><label asp-for="Correo" class="form-label">Correo</label><input asp-for="Correo" type="email" class="form-control" maxlength="150" required /></div></div>
+        <div class="mb-3"><label asp-for="Asunto" class="form-label">Asunto</label><input asp-for="Asunto" class="form-control" maxlength="140" required /></div>
+        <div class="mb-3"><label asp-for="Mensaje" class="form-label">Mensaje</label><textarea asp-for="Mensaje" class="form-control" rows="6" minlength="10" maxlength="3000" required></textarea></div>
+        <button type="submit" class="btn btn-altoke">Enviar mensaje</button>
+    </form>
+</div></div></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

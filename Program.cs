@@ -14,6 +14,7 @@ if (!string.IsNullOrEmpty(port))
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<RecomendadorObjetos>();
+builder.Services.AddSingleton<SentimientoService>();
 
 // ── Base de datos SQLite (ruta adaptada a producción) ──────────────
 var dbPath = builder.Environment.IsProduction()
