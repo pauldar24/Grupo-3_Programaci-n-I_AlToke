@@ -1,5 +1,6 @@
 using GRUPAL.Data;
 using Microsoft.EntityFrameworkCore;
+using GRUPAL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ if (!string.IsNullOrEmpty(port))
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<RecomendadorObjetos>();
 
 // ── Base de datos SQLite (ruta adaptada a producción) ──────────────
 var dbPath = builder.Environment.IsProduction()
