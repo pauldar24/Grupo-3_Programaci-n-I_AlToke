@@ -13,6 +13,7 @@
 
             <form asp-action="Create" asp-controller="ObjetosPerdidos" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger"></div>
 
                 @* Fila 1: Título y Categoría *@
                 <div class="row mb-3">
@@ -40,7 +41,7 @@
                 @* Fila 2: Descripción detallada *@
                 <div class="mb-3">
                     <label asp-for="Descripcion" class="form-label fw-semibold">Descripción detallada</label>
-                    <textarea asp-for="Descripcion" class="form-control" rows="4"
+                    <textarea asp-for="Descripcion" class="form-control" rows="4" maxlength="3000"
                               placeholder="Describe el objeto con el mayor detalle posible: color, marca, tamaño, dónde lo viste por última vez..." required></textarea>
                     <span asp-validation-for="Descripcion" class="text-danger"></span>
                 </div>
@@ -54,10 +55,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Foto</label>
-                        <input type="file" name="foto" class="form-control" accept="image/*" />
+                        <input type="file" name="foto" class="form-control" accept="image/jpeg,image/png,image/webp" /><small class="text-muted">JPG, PNG o WebP · máximo 5 MB</small>
                     </div>
                 </div>
 
+                <div class="mb-3"><label asp-for="Ubicacion" class="form-label fw-semibold">Última ubicación conocida</label><input asp-for="Ubicacion" maxlength="200" class="form-control" placeholder="Ej.: Biblioteca central, segundo piso" /></div>
                 @* Botón de envío *@
                 <div class="d-grid">
                     <button type="submit" class="btn btn-lg text-white" style="background-color: #FF6B00; border-color: #FF6B00;">
