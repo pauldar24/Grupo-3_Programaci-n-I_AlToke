@@ -1,0 +1,16 @@
+<div id="chatAlToke" class="altoke-chat" data-url="@Url.Action("Preguntar", "Asistente")">
+    <button id="abrirChatAlToke" type="button" class="altoke-chat-trigger" aria-expanded="false" aria-controls="panelChatAlToke">
+        <i class="bi bi-chat-dots-fill me-1"></i> ¿Necesitas ayuda?
+    </button>
+    <section id="panelChatAlToke" class="altoke-chat-panel" hidden aria-label="Asistente AlToke">
+        <header class="altoke-chat-heading"><div><strong><i class="bi bi-geo-alt-fill me-2"></i>Asistente AlToke</strong><small class="d-block">Te ayudo a encontrar tu objeto</small></div><button id="cerrarChatAlToke" type="button" class="btn btn-sm text-white" aria-label="Cerrar chat"><i class="bi bi-x-lg"></i></button></header>
+        <div id="mensajesChatAlToke" class="altoke-chat-messages" role="log" aria-live="polite"><p class="altoke-chat-bubble">¡Hola! Puedes preguntarme cómo funciona AlToke o buscar avisos publicados. 👋</p></div>
+        <form id="formChatAlToke" class="altoke-chat-form">
+            @Html.AntiForgeryToken()
+            <label for="preguntaChatAlToke" class="visually-hidden">Escribe tu consulta</label>
+            <input id="preguntaChatAlToke" class="form-control" maxlength="600" autocomplete="off" placeholder="¿Perdieron unas llaves?" required />
+            <button type="submit" class="btn btn-altoke" aria-label="Enviar mensaje"><i class="bi bi-send-fill"></i></button>
+        </form>
+        <p class="altoke-chat-disclaimer">Verifica cada aviso. Nunca compartas información sensible.</p>
+    </section>
+</div>

@@ -494,3 +494,17 @@ body {
 .altoke-suggestion:hover { background: #fff3eb; }
 .altoke-suggestion strong, .altoke-suggestion small { display: block; }
 .altoke-suggestion small { color: #757575; }
+
+.altoke-chat { position: fixed; z-index: 1050; bottom: 1.2rem; right: 1.2rem; font-family: Inter, sans-serif; }
+.altoke-chat-trigger { border: 0; border-radius: 999px; background: var(--altoke-gradient); color: #fff; font-weight: 700; padding: .8rem 1.2rem; box-shadow: 0 7px 24px #ff6b0050; }
+.altoke-chat-panel { width: min(370px, calc(100vw - 2.4rem)); max-height: min(570px, 75vh); display: flex; flex-direction: column; background: #fff; border-radius: 17px; box-shadow: 0 16px 50px #1a1a2e40; margin-bottom: .7rem; overflow: hidden; }
+.altoke-chat-panel[hidden] { display: none; }
+.altoke-chat-heading { background: var(--altoke-gradient); color: #fff; display: flex; justify-content: space-between; padding: 1rem; }
+.altoke-chat-heading small { opacity: .88; }
+.altoke-chat-messages { padding: 1rem; overflow-y: auto; min-height: 170px; background: #fffaf6; }
+.altoke-chat-bubble { max-width: 90%; background: #fff; border-radius: 13px 13px 13px 2px; padding: .7rem .85rem; box-shadow: 0 1px 5px #1a1a2e10; margin-bottom: .75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.altoke-chat-user { background: #ffead9; color: #472500; border-radius: 13px 13px 2px 13px; margin-left: auto; }
+.altoke-chat-link { display: block; margin-bottom: .45rem; padding: .65rem; background: white; color: var(--altoke-orange); border: 1px solid #ffd8bb; border-radius: 10px; text-decoration: none; font-weight: 600; }
+.altoke-chat-form { display: flex; gap: .4rem; padding: .6rem; border-top: 1px solid #eee; }
+.altoke-chat-form .form-control { min-width: 0; }
+.altoke-chat-disclaimer { font-size: .67rem; color: #888; text-align: center; margin: 0; padding: .2rem .6rem .65rem; }
