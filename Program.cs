@@ -1,5 +1,6 @@
 using GRUPAL.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using GRUPAL.Services;
 using Microsoft.OpenApi;
 
@@ -17,8 +18,13 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<RecomendadorObjetos>();
 builder.Services.AddSingleton<SentimientoService>();
 builder.Services.AddScoped<AsistenteAlToke>();
+builder.Services.AddScoped<AlgoliaObjetosService>();
 builder.Services.AddHttpClient();
-builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "AlToke - API de objetos", Version = "v1" }));
+builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
+{
+    Title = "AlToke - API de objetos", Version = "v1",
+    Description = "Lectura pública; POST, PUT y DELETE requieren sesión y token antifalsificación."
+}));
 
 // ── Base de datos SQLite (ruta adaptada a producción) ──────────────
 var dbPath = builder.Environment.IsProduction()
@@ -27,9 +33,9 @@ var dbPath = builder.Environment.IsProduction()
 
 if (builder.Environment.IsProduction())
     Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseSqlite($"Data Source={dbPath}")
+        .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 // ── Paso 4: Memoria distribuida con Redis ────────────────────────────
 var redisConnection = builder.Configuration.GetConnectionString("Redis");
@@ -75,7 +81,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "❌ Error al aplicar migraciones automáticas.");
     }
 
-    // Los datos de ejemplo solo se cargan de forma explícita en desarrollo.
+    // Cargar ejemplos exclusivamente cuando se solicite (nunca borrar registros de usuarios).
     if (app.Configuration.GetValue<bool>("SeedDemoData") && app.Environment.IsDevelopment())
         await DbSeeder.SeedAsync(db);
 }
