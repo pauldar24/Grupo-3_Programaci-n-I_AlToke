@@ -12,9 +12,9 @@ dotnet build
 dotnet run
 ```
 
-Abre la dirección local mostrada por `dotnet run`. La base existente `Altoke.db` se conserva e incluye datos demostrativos; la nueva migración `20261028000000_FuncionesDemoAlToke` agrega cuatro tablas sin borrar las anteriores. La migración se aplica al arrancar.
+Abre la dirección local mostrada por `dotnet run`. La nueva migración `20261028000000_FuncionesDemoAlToke` agrega cuatro tablas sin borrar las anteriores y se aplica al arrancar.
 
-Si arrancas desde una base nueva vacía y quieres ejemplos, habilita `SeedDemoData=true` **solo en Development**. El seeder ya no borra registros, y los usuarios demostrativos nuevos reciben contraseñas con hash PBKDF2. No actives ese seeder en producción.
+`SeedDemoData=true` carga los objetos de muestra cuando la base no tiene usuarios ni publicaciones. Está habilitado por defecto para que una base SQLite nueva en Render también muestre ejemplos. El seeder se detiene si encuentra usuarios o publicaciones y nunca los borra. Las cuentas demostrativas nuevas reciben contraseñas con hash PBKDF2.
 
 ## Configuración por variables de entorno
 
@@ -28,7 +28,7 @@ Las claves no se incluyen en el código. Usa variables de entorno `SECCION__CLAV
 | `Groq__ApiKey`, `Groq__Model` | Asistente de IA opcional; sin clave funciona la respuesta local basada en publicaciones y FAQ |
 | `Algolia__ApplicationId`, `Algolia__SearchApiKey`, `Algolia__AdminApiKey`, `Algolia__IndexName` | Autocompletado externo y sincronización desde el panel, opcional |
 | `Sentimiento__Enabled` | Modelo ML.NET para analizar mensajes de contacto (activado por defecto) |
-| `SeedDemoData` | Carga voluntaria de datos de ejemplo, solo en Development |
+| `SeedDemoData` | Habilita datos de muestra en una base vacía; activo por defecto |
 
 **Importante:** los ZIP originales contenían una contraseña de administración y credenciales de Cloudinary escritas en `appsettings.json`. Se retiraron del proyecto actualizado; **debes revocarlas y sustituirlas en el proveedor correspondiente**, porque haberlas quitado del ZIP no impide que las copias anteriores sigan expuestas. No publiques archivos secretos ni bases de datos con credenciales reales.
 

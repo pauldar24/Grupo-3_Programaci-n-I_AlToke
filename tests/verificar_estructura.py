@@ -27,6 +27,7 @@ assert not cfg['Cloudinary']['ApiSecret'], 'No debe haber una clave Cloudinary e
 assert not cfg['AdminSettings']['Password'], 'No debe quedar la contraseña admin en el ZIP'
 assert not cfg['Groq']['ApiKey'], 'No debe quedar la clave Groq en el ZIP'
 assert not cfg['Algolia']['AdminApiKey'], 'No debe quedar la clave admin de Algolia en el ZIP'
+assert cfg['SeedDemoData'] is True, 'El seeder debe quedar habilitado para una base vacía en Render'
 ET.parse(root / 'GRUPAL.csproj')
 
 db_path = root / 'Altoke.db'
