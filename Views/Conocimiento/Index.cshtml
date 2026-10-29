@@ -1,0 +1,21 @@
+@model List<GRUPAL.Models.ArticuloAyuda>
+@{
+    ViewData["Title"] = "Base de ayuda";
+}
+<div class="container py-4">
+    <a asp-controller="Admin" asp-action="Index" class="small text-muted">← Administración</a>
+    <h1 class="fw-bold mt-3">Base de ayuda</h1><p class="text-muted">Respuestas que el asistente usa para orientar a la comunidad AlToke.</p>
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+    @if (TempData["Exito"] is string exito) { <div class="alert alert-success">@exito</div> }
+    <form asp-action="CargarTexto" method="post" enctype="multipart/form-data" class="card border-0 shadow-sm p-3 mb-4">
+        @Html.AntiForgeryToken()
+        <label for="documentoAyuda" class="form-label fw-semibold">Importar documento de ayuda (TXT o Markdown)</label>
+        <div class="d-flex flex-wrap gap-2"><input id="documentoAyuda" type="file" name="archivo" accept=".txt,.md" class="form-control flex-grow-1" style="max-width:440px" required /><button type="submit" class="btn btn-outline-altoke">Importar</button></div>
+        <small class="text-muted mt-2">Máximo 256 KB. El documento se divide en fragmentos y se guarda localmente.</small>
+    </form>
+    <div class="card border-0 shadow-sm p-4 mb-4"><h5 class="fw-bold">Agregar respuesta</h5><form asp-action="Guardar" method="post">@Html.AntiForgeryToken()<div class="mb-3"><label class="form-label" for="pregunta">Pregunta</label><input id="pregunta" name="pregunta" maxlength="160" required class="form-control" placeholder="¿Cómo publico un objeto?" /></div><div class="mb-3"><label class="form-label" for="respuesta">Respuesta</label><textarea id="respuesta" name="respuesta" rows="3" maxlength="4000" required class="form-control"></textarea></div><button type="submit" class="btn btn-altoke">Guardar</button></form></div>
+    @foreach (var articulo in Model)
+    {
+        <div class="card border-0 shadow-sm p-3 mb-2"><strong>@articulo.Pregunta</strong><p class="text-muted my-2">@articulo.Respuesta</p><form asp-action="Eliminar" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@articulo.Id" /><button class="btn btn-outline-danger btn-sm" type="submit">Eliminar</button></form></div>
+    }
+</div>
