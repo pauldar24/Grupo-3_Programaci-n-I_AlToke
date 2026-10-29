@@ -18,6 +18,9 @@ var dbPath = builder.Environment.IsProduction()
     ? "/app/data/Altoke.db"
     : "Altoke.db";
 
+if (builder.Environment.IsProduction())
+    Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -65,8 +68,9 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "❌ Error al aplicar migraciones automáticas.");
     }
 
-    // Ejecutar Seeder para poblar datos si está vacío
-    await DbSeeder.SeedAsync(db);
+    // Los datos de ejemplo solo se cargan de forma explícita en desarrollo.
+    if (app.Configuration.GetValue<bool>("SeedDemoData") && app.Environment.IsDevelopment())
+        await DbSeeder.SeedAsync(db);
 }
 
 // Configure the HTTP request pipeline.

@@ -6,6 +6,8 @@ using GRUPAL.Filters;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace GRUPAL.Controllers;
 
@@ -15,7 +17,7 @@ public class AdminController : Controller
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
-    private readonly Cloudinary _cloudinary;
+    private readonly Cloudinary? _cloudinary;
 
     public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env)
     {
@@ -24,8 +26,12 @@ public class AdminController : Controller
         _env = env;
 
         var cloud = config.GetSection("Cloudinary");
-        var account = new Account(cloud["CloudName"], cloud["ApiKey"], cloud["ApiSecret"]);
-        _cloudinary = new Cloudinary(account);
+        if (!string.IsNullOrWhiteSpace(cloud["CloudName"]) && !string.IsNullOrWhiteSpace(cloud["ApiKey"])
+            && !string.IsNullOrWhiteSpace(cloud["ApiSecret"]))
+        {
+            var account = new Account(cloud["CloudName"], cloud["ApiKey"], cloud["ApiSecret"]);
+            _cloudinary = new Cloudinary(account);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -47,13 +53,18 @@ public class AdminController : Controller
     public IActionResult Login(string password)
     {
         var adminPassword = _config["AdminSettings:Password"];
-        if (password == adminPassword)
+        if (!string.IsNullOrWhiteSpace(adminPassword) && !string.IsNullOrEmpty(password)
+            && CryptographicOperations.FixedTimeEquals(
+                SHA256.HashData(Encoding.UTF8.GetBytes(password)),
+                SHA256.HashData(Encoding.UTF8.GetBytes(adminPassword))))
         {
             HttpContext.Session.SetString("IsAdmin", "true");
             return RedirectToAction(nameof(Index));
         }
 
-        ViewBag.Error = "Contraseña incorrecta. Inténtalo de nuevo.";
+        ViewBag.Error = string.IsNullOrWhiteSpace(adminPassword)
+            ? "Configura AdminSettings__Password en el servidor para habilitar el acceso."
+            : "Contraseña incorrecta. Inténtalo de nuevo.";
         return View();
     }
 
@@ -84,7 +95,6 @@ public class AdminController : Controller
 
         return View(recientes);
     }
-
     // ═══════════════════════════════════════════════════════════
     //  OBJETOS
     // ═══════════════════════════════════════════════════════════
@@ -199,8 +209,7 @@ public class AdminController : Controller
                 await EliminarFotoAsync(obj.FotoUrl);
             }
         }
-
-        _context.Usuarios.Remove(usuario);
+_context.Usuarios.Remove(usuario);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Usuarios));
     }
@@ -213,7 +222,8 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(fotoUrl)) return;
 
-        if (fotoUrl.Contains("cloudinary", StringComparison.OrdinalIgnoreCase))
+        if (fotoUrl.Contains("res.cloudinary.com", StringComparison.OrdinalIgnoreCase)
+            && _cloudinary is not null)
         {
             // Extraer public_id de la URL de Cloudinary
             var match = Regex.Match(fotoUrl, @"/upload/(?:v\d+/)?(.+)\.\w+$");
@@ -226,7 +236,8 @@ public class AdminController : Controller
         else if (fotoUrl.StartsWith("/uploads/"))
         {
             // Archivo local (legacy) — intentar eliminar
-            var filePath = Path.Combine(_env.WebRootPath, fotoUrl.TrimStart('/'));
+            var nombreArchivo = Path.GetFileName(fotoUrl);
+            var filePath = Path.Combine(_env.WebRootPath, "uploads", nombreArchivo);
             if (System.IO.File.Exists(filePath))
                 System.IO.File.Delete(filePath);
         }

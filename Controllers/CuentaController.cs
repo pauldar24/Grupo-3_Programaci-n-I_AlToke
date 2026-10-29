@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GRUPAL.Data;
 using GRUPAL.Models;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace GRUPAL.Controllers;
 public class CuentaController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly PasswordHasher<Usuario> _hasher = new();
 
     public CuentaController(ApplicationDbContext context)
     {
@@ -36,6 +38,13 @@ public class CuentaController : Controller
             return View();
         }
 
+        nombre = nombre.Trim();
+        correo = correo.Trim().ToLowerInvariant();
+        if (nombre.Length > 100 || correo.Length > 150 || contraseña.Length < 8 || contraseña.Length > 128)
+        {
+            ViewBag.Error = "Usa un nombre y correo válidos y una contraseña de entre 8 y 128 caracteres.";
+            return View();
+        }
         var existeCorreo = await _context.Usuarios.AnyAsync(u => u.Correo == correo);
         if (existeCorreo)
         {
@@ -47,12 +56,13 @@ public class CuentaController : Controller
         {
             Nombre = nombre,
             Correo = correo,
-            Contraseña = HashPassword(contraseña),
+            Contraseña = string.Empty,
             PublicacionesActivas = 0,
             HistoriasResueltas = 0,
             BuenasAcciones = 0
         };
 
+        nuevoUsuario.Contraseña = _hasher.HashPassword(nuevoUsuario, contraseña);
         _context.Usuarios.Add(nuevoUsuario);
         await _context.SaveChangesAsync();
 
@@ -83,14 +93,26 @@ public class CuentaController : Controller
             return View();
         }
 
-        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo.Trim().ToLowerInvariant());
         
         if (usuario != null)
         {
-            // Para soportar las contraseñas planas del DbSeeder y las nuevas hasheadas
-            bool esValida = usuario.Contraseña == contraseña || usuario.Contraseña == HashPassword(contraseña);
-            
-            if (esValida)
+            var verificacion = usuario.Contraseña.StartsWith("AQAAAA", StringComparison.Ordinal)
+                ? _hasher.VerifyHashedPassword(usuario, usuario.Contraseña, contraseña)
+                : PasswordVerificationResult.Failed;
+            var legado = verificacion == PasswordVerificationResult.Failed &&
+                (VerificarLegado(usuario.Contraseña, HashPassword(contraseña)) ||
+                 VerificarLegado(usuario.Contraseña, contraseña));
+            if (verificacion != PasswordVerificationResult.Failed || legado)
+            {
+                // Actualizar hashes antiguos (SHA256 o texto de datos demostrativos) al iniciar sesión.
+                if (legado || verificacion == PasswordVerificationResult.SuccessRehashNeeded)
+                {
+                    usuario.Contraseña = _hasher.HashPassword(usuario, contraseña);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            if (verificacion != PasswordVerificationResult.Failed || legado)
             {
                 HttpContext.Session.SetInt32("UsuarioId", usuario.Id);
                 HttpContext.Session.SetString("UsuarioNombre", usuario.Nombre);
@@ -119,6 +141,7 @@ public class CuentaController : Controller
             return RedirectToAction(nameof(Ingresar));
         }
 
+        ViewBag.Resueltas = usuario.ObjetosPerdidos.Count(o => o.Estado == EstadoObjeto.Encontrado);
         return View(usuario);
     }
 
@@ -132,8 +155,15 @@ public class CuentaController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    // Helper de encriptación simple (SHA256)
-    private string HashPassword(string password)
+    private static bool VerificarLegado(string almacenada, string candidata)
+    {
+        var a = Encoding.UTF8.GetBytes(almacenada);
+        var b = Encoding.UTF8.GetBytes(candidata);
+        return a.Length == b.Length && CryptographicOperations.FixedTimeEquals(a, b);
+    }
+
+    // Sólo compatibilidad de migración: las contraseñas nuevas usan PasswordHasher (PBKDF2).
+    private static string HashPassword(string password)
     {
         using (var sha256 = SHA256.Create())
         {

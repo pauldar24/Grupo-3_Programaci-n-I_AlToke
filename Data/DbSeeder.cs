@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using GRUPAL.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace GRUPAL.Data;
 
@@ -10,11 +11,8 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        if (await context.Usuarios.CountAsync() > 1) return;
-
-        context.ObjetosPerdidos.RemoveRange(context.ObjetosPerdidos);
-        context.Usuarios.RemoveRange(context.Usuarios);
-        await context.SaveChangesAsync();
+        // Nunca eliminar datos existentes al iniciar el servidor.
+        if (await context.Usuarios.AnyAsync() || await context.ObjetosPerdidos.AnyAsync()) return;
 
         var users = new List<Usuario>
         {
@@ -32,6 +30,8 @@ public static class DbSeeder
             new Usuario { Nombre = "Isabella Vargas", Correo = "isabella.vargas@usmp.pe", Contraseña = "Isabella123!", PublicacionesActivas = 3, HistoriasResueltas = 1, BuenasAcciones = 2 }
         };
 
+        var hasher = new PasswordHasher<Usuario>();
+        foreach (var user in users) user.Contraseña = hasher.HashPassword(user, user.Contraseña);
         await context.Usuarios.AddRangeAsync(users);
         await context.SaveChangesAsync();
 
