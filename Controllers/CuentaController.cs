@@ -142,6 +142,8 @@ public class CuentaController : Controller
         }
 
         ViewBag.Resueltas = usuario.ObjetosPerdidos.Count(o => o.Estado == EstadoObjeto.Encontrado);
+        ViewBag.BuenasAcciones = await _context.SolicitudesRecuperacion
+            .CountAsync(s => s.ObjetoPerdido.UsuarioId == usuario.Id && s.Estado == EstadoSolicitud.Aceptada);
         return View(usuario);
     }
 

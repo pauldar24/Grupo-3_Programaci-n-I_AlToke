@@ -1,0 +1,39 @@
+@model List<GRUPAL.Models.SolicitudRecuperacion>
+@using GRUPAL.Models
+@{
+    ViewData["Title"] = "Recuperaciones";
+    var usuarioId = (int)ViewBag.UsuarioId;
+}
+<div class="container py-4">
+    <h1 class="fw-bold"><i class="bi bi-arrow-left-right text-altoke me-2"></i>Recuperaciones</h1>
+    <p class="text-muted mb-4">Solicitudes recibidas en tus publicaciones y mensajes que tú has enviado.</p>
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+    @if (!Model.Any()) { <div class="empty-state p-5 text-center text-muted">Todavía no hay solicitudes. <a asp-controller="Explorar" asp-action="Index">Explora publicaciones</a>.</div> }
+    @foreach (var s in Model)
+    {
+        var esPropietario = s.ObjetoPerdido.UsuarioId == usuarioId;
+        <div class="card border-0 shadow-sm mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                <div><span class="badge badge-categoria">@(esPropietario ? "Recibida" : "Enviada")</span><h5 class="fw-bold mt-2 mb-0"><a class="text-dark" asp-controller="Explorar" asp-action="Detalle" asp-route-id="@s.ObjetoPerdidoId">@s.ObjetoPerdido.Título</a></h5></div>
+                <span class="badge align-self-start @(s.Estado == EstadoSolicitud.Pendiente ? "bg-warning text-dark" : s.Estado == EstadoSolicitud.Aceptada ? "bg-success" : "bg-secondary")">@s.Estado</span>
+            </div>
+            <div class="text-muted small">@(esPropietario ? "Solicita: " + s.Solicitante.Nombre : "Tu solicitud") · @s.CreadoEn.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+            <p class="mt-2 mb-3">@s.Mensaje</p>
+            @if (esPropietario && s.Estado == EstadoSolicitud.Pendiente)
+            {
+                <form method="post" asp-action="Resolver" class="mb-2">
+                    @Html.AntiForgeryToken()<input type="hidden" name="id" value="@s.Id"/><input type="hidden" name="estado" value="Aceptada"/>
+                    <label for="respuesta-@s.Id" class="form-label small">Cómo coordinar la devolución (visible solo para el solicitante)</label>
+                    <textarea id="respuesta-@s.Id" name="respuesta" class="form-control mb-2" rows="2" maxlength="1000" required placeholder="Ej.: Nos vemos en seguridad de la universidad..."></textarea>
+                    <button type="submit" class="btn btn-altoke btn-sm">Aceptar y responder</button>
+                </form>
+                <form method="post" asp-action="Resolver">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@s.Id"/><input type="hidden" name="estado" value="Rechazada"/><button type="submit" class="btn btn-outline-secondary btn-sm">Rechazar</button></form>
+            }
+            @if (!string.IsNullOrWhiteSpace(s.Respuesta))
+            {
+                <div class="alert alert-light border mt-3 mb-0"><strong>Respuesta del autor:</strong><p class="mb-0" style="white-space:pre-wrap">@s.Respuesta</p></div>
+            }
+            @if (s.Estado == EstadoSolicitud.Aceptada) { <p class="text-muted small mt-2 mb-0">Coordinen la entrega de manera segura. Aceptar no cierra automáticamente la publicación.</p> }
+        </div></div>
+    }
+</div>

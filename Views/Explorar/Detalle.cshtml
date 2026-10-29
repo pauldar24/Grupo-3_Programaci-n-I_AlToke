@@ -1,38 +1,103 @@
 @model GRUPAL.Models.ObjetoPerdido
+@using GRUPAL.Models
 @{
     ViewData["Title"] = Model.Título;
+    var sesion = Context.Session.GetInt32("UsuarioId");
+    var dueno = sesion == Model.UsuarioId;
+    var relacionados = ViewBag.Recomendados as List<ObjetoPerdido> ?? new();
 }
 <div class="container py-4">
-    <a asp-action="Index" class="text-decoration-none text-altoke"><i class="bi bi-arrow-left"></i> Volver a explorar</a>
-    <div class="row g-4 mt-2">
+    <a asp-action="Index" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> Volver a explorar</a>
+    @if (TempData["Exito"] is string exito) { <div class="alert alert-success mt-3">@exito</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger mt-3">@error</div> }
+    <div class="row g-4 mt-1">
         <div class="col-lg-6">
-            @if (!string.IsNullOrWhiteSpace(Model.FotoUrl)) { <img src="@Model.FotoUrl" class="img-fluid rounded-4 shadow-sm w-100" alt="@Model.Título" /> }
-            else { <div class="altoke-photo-placeholder rounded-4"><i class="bi bi-image"></i></div> }
+            <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+                @if (!string.IsNullOrEmpty(Model.FotoUrl))
+                {
+                    <img src="@Model.FotoUrl" alt="@Model.Título" class="img-fluid" style="width:100%;max-height:440px;object-fit:cover" />
+                }
+                else
+                {
+                    <div class="altoke-photo-placeholder"><i class="bi bi-image"></i></div>
+                }
+            </div>
         </div>
         <div class="col-lg-6">
-            <span class="badge badge-categoria">@Model.Categoría</span>
-            <h1 class="fw-bold mt-3">@Model.Título</h1>
-            <p class="text-muted"><i class="bi bi-geo-alt"></i> @Model.Ubicacion · @Model.Fecha.ToString("dd/MM/yyyy")</p>
-            <p>@Model.Descripcion</p>
-            <p><strong>Estado:</strong> @Model.Estado</p>
-            <p><strong>Publicado por:</strong> @Model.Usuario?.Nombre</p>
-            <form asp-controller="Favoritos" asp-action="Alternar" method="post" class="my-3">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@Model.Id" />
-                <button type="submit" class="btn btn-outline-altoke"><i class="bi bi-bookmark-heart"></i> @(ViewBag.EsFavorito ? "Quitar de favoritos" : "Guardar en favoritos")</button>
-            </form>
-            @if (ViewBag.Recomendados is List<GRUPAL.Models.ObjetoPerdido> recomendados && recomendados.Any())
-            {
-                <h3 class="h5 fw-bold mt-4">Objetos relacionados</h3>
-                @foreach (var relacionado in recomendados)
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+                <span class="badge badge-categoria">@Model.Categoría</span>
+                <span class="badge @(Model.Estado == EstadoObjeto.Perdido ? "badge-estado-perdido" : "badge-estado-encontrado")">@Model.Estado</span>
+            </div>
+            <h1 class="fw-bold mb-3">@Model.Título</h1>
+            <p class="text-muted">@Model.Descripcion</p>
+            <ul class="list-unstyled small text-muted my-4">
+                <li class="mb-2"><i class="bi bi-geo-alt me-2 text-altoke"></i>@Model.Ubicacion</li>
+                <li class="mb-2"><i class="bi bi-calendar-event me-2 text-altoke"></i>@Model.Fecha.ToString("dd/MM/yyyy")</li>
+                <li><i class="bi bi-person-circle me-2 text-altoke"></i>Publicado por @(Model.Usuario?.Nombre ?? "Un miembro de la comunidad")</li>
+            </ul>
+            <div class="d-flex flex-wrap gap-2">
+                @if (sesion.HasValue)
                 {
-                    <a asp-action="Detalle" asp-route-id="@relacionado.Id" class="d-block text-decoration-none text-dark border rounded p-2 mb-2"><strong>@relacionado.Título</strong><small class="d-block text-muted">@relacionado.Categoría · @relacionado.Ubicacion</small></a>
+                    <form asp-controller="Favoritos" asp-action="Alternar" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button class="btn btn-outline-altoke" type="submit"><i class="bi bi-@(ViewBag.EsFavorito == true ? "bookmark-fill" : "bookmark") me-1"></i>@(ViewBag.EsFavorito == true ? "Quitar favorito" : "Guardar favorito")</button>
+                    </form>
                 }
-            }
-            @if (Context.Session.GetInt32("UsuarioId") == Model.UsuarioId)
+                @if (dueno)
+                {
+                    <a asp-controller="ObjetosPerdidos" asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-outline-secondary"><i class="bi bi-pencil me-1"></i>Editar</a>
+                    @if (Model.Estado == EstadoObjeto.Perdido)
+                    {
+                        <form asp-controller="ObjetosPerdidos" asp-action="Cerrar" method="post">
+                            @Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.Id" />
+                            <button class="btn btn-altoke" type="submit">Marcar recuperado</button>
+                        </form>
+                    }
+                }
+            </div>
+            @if (!dueno && Model.Estado == EstadoObjeto.Perdido)
             {
-                <a asp-controller="ObjetosPerdidos" asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-outline-altoke">Editar publicación</a>
+                <div class="card shadow-sm border-0 bg-light mt-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-2">¿Crees que puedes ayudar a recuperarlo?</h5>
+                        @if (!sesion.HasValue)
+                        {
+                            <p class="text-muted mb-3">Inicia sesión para contactar al autor de este reporte.</p>
+                            <a asp-controller="Cuenta" asp-action="Ingresar" class="btn btn-altoke">Iniciar sesión</a>
+                        }
+                        else if (ViewBag.YaSolicito == true)
+                        {
+                            <p class="mb-1 text-success"><i class="bi bi-check-circle"></i> Ya enviaste una solicitud.</p>
+                            <a asp-controller="Recuperaciones" asp-action="Index" class="small">Ver mis solicitudes</a>
+                        }
+                        else
+                        {
+                            <form asp-controller="Recuperaciones" asp-action="Solicitar" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <label class="form-label" for="mensajeRecuperacion">Explica por qué crees que es el objeto correcto</label>
+                                <textarea id="mensajeRecuperacion" name="mensaje" class="form-control mb-3" minlength="10" maxlength="1000" rows="3" required placeholder="Describe alguna característica para coordinar con el autor..."></textarea>
+                                <button type="submit" class="btn btn-altoke">Enviar solicitud</button>
+                            </form>
+                        }
+                    </div>
+                </div>
             }
         </div>
     </div>
+    @if (relacionados.Any())
+    {
+        <h3 class="fw-bold mt-5 mb-3">También podría interesarte</h3>
+        <div class="row g-3">
+            @foreach (var obj in relacionados)
+            {
+                <div class="col-md-4"><a class="card card-objeto h-100 border-0 shadow-sm text-decoration-none text-dark" asp-action="Detalle" asp-route-id="@obj.Id">
+                    @if (!string.IsNullOrEmpty(obj.FotoUrl)) { <img class="card-img-top" src="@obj.FotoUrl" alt="@obj.Título" /> }
+                    else { <div class="altoke-photo-placeholder small"><i class="bi bi-image"></i></div> }
+                    <div class="card-body"><span class="badge badge-categoria mb-2">@obj.Categoría</span><h5 class="fw-semibold">@obj.Título</h5><small class="text-muted">@obj.Ubicacion</small></div>
+                </a></div>
+            }
+        </div>
+    }
 </div>
