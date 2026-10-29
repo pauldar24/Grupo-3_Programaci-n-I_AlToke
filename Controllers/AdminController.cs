@@ -8,6 +8,7 @@ using CloudinaryDotNet.Actions;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
+using GRUPAL.Services;
 
 namespace GRUPAL.Controllers;
 
@@ -18,12 +19,14 @@ public class AdminController : Controller
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
     private readonly Cloudinary? _cloudinary;
+    private readonly AlgoliaObjetosService _algolia;
 
-    public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env)
+    public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env, AlgoliaObjetosService algolia)
     {
         _context = context;
         _config = config;
         _env = env;
+        _algolia = algolia;
 
         var cloud = config.GetSection("Cloudinary");
         if (!string.IsNullOrWhiteSpace(cloud["CloudName"]) && !string.IsNullOrWhiteSpace(cloud["ApiKey"])
@@ -96,7 +99,27 @@ public class AdminController : Controller
         return View(recientes);
     }
 
-// ═══════════════════════════════════════════════════════════
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SincronizarAlgolia(CancellationToken ct)
+    {
+        if (!_algolia.PuedeSincronizar)
+        {
+            TempData["Error"] = "Completa las variables de Algolia para sincronizar avisos.";
+            return RedirectToAction(nameof(Index));
+        }
+        try
+        {
+            var cantidad = await _algolia.SincronizarAsync(ct);
+            TempData["Exito"] = $"{cantidad} avisos enviados al índice de Algolia.";
+        }
+        catch (Exception)
+        {
+            TempData["Error"] = "No se pudo sincronizar. Revisa la conexión y permisos de Algolia.";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ═══════════════════════════════════════════════════════════
     //  OBJETOS
     // ═══════════════════════════════════════════════════════════
 
