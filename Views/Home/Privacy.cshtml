@@ -1,6 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
+@{ ViewData["Title"] = "Privacidad"; }
+<div class="container py-5">
+    <h1 class="fw-bold mb-3">Privacidad en AlToke</h1>
+    <p class="text-muted">Los avisos muestran el título, descripción, ubicación aproximada y nombre del autor. Evita incluir datos personales sensibles como números de identificación, contraseñas o domicilios exactos.</p>
+    <p class="text-muted">Los mensajes de contacto y las solicitudes de recuperación se almacenan para gestionar tu consulta. El asistente consulta publicaciones públicas; si está configurada la API de Groq, el texto de la pregunta y el contexto público relevante se envían a ese proveedor.</p>
+    <p class="text-muted">Puedes contactar al equipo desde <a asp-controller="Home" asp-action="Contacto">Contacto</a>.</p>
+</div>
