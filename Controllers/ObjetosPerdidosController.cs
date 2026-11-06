@@ -4,6 +4,7 @@ using GRUPAL.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.EntityFrameworkCore;
+using GRUPAL.Services;
 
 namespace GRUPAL.Controllers;
 
@@ -12,12 +13,24 @@ public class ObjetosPerdidosController : Controller
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
+    private readonly CategoriaObjetoService _categoriaObjeto;
 
-    public ObjetosPerdidosController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env)
+    public ObjetosPerdidosController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env,
+        CategoriaObjetoService categoriaObjeto)
     {
         _context = context;
         _config = config;
         _env = env;
+        _categoriaObjeto = categoriaObjeto;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SugerirCategoria(string? titulo, string? descripcion, CancellationToken ct)
+    {
+        var texto = $"{titulo?.Trim()} {descripcion?.Trim()}".Trim();
+        if (texto.Length < 8 || texto.Length > 3200) return NoContent();
+        var categoria = await _categoriaObjeto.PredecirAsync(texto, ct);
+        return string.IsNullOrWhiteSpace(categoria) ? NoContent() : Json(new { categoria });
     }
 
     public IActionResult Create()

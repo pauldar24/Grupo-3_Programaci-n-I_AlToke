@@ -20,13 +20,16 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly Cloudinary? _cloudinary;
     private readonly AlgoliaObjetosService _algolia;
+    private readonly CategoriaObjetoService _categoriaObjeto;
 
-    public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env, AlgoliaObjetosService algolia)
+    public AdminController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env,
+        AlgoliaObjetosService algolia, CategoriaObjetoService categoriaObjeto)
     {
         _context = context;
         _config = config;
         _env = env;
         _algolia = algolia;
+        _categoriaObjeto = categoriaObjeto;
 
         var cloud = config.GetSection("Cloudinary");
         if (!string.IsNullOrWhiteSpace(cloud["CloudName"]) && !string.IsNullOrWhiteSpace(cloud["ApiKey"])
@@ -116,6 +119,16 @@ public class AdminController : Controller
         {
             TempData["Error"] = "No se pudo sincronizar. Revisa la conexión y permisos de Algolia.";
         }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReentrenarCategoria(CancellationToken ct)
+    {
+        var entrenado = await _categoriaObjeto.ReentrenarAsync(ct);
+        TempData[entrenado ? "Exito" : "Error"] = entrenado
+            ? "El clasificador de categorías se reentrenó con los avisos actuales."
+            : "Se necesitan al menos 10 avisos repartidos en dos o más categorías para entrenar el modelo.";
         return RedirectToAction(nameof(Index));
     }
 
