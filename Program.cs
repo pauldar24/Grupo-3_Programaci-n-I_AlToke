@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using GRUPAL.Services;
+using GRUPAL.Hubs;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ if (!string.IsNullOrEmpty(port))
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 builder.Services.AddScoped<RecomendadorObjetos>();
 builder.Services.AddSingleton<SentimientoService>();
 builder.Services.AddSingleton<CategoriaObjetoService>();
@@ -153,6 +155,7 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapControllers();
+app.MapHub<ObjetosHub>("/hubs/objetos");
 
 app.MapControllerRoute(
     name: "default",

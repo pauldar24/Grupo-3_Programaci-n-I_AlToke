@@ -5,6 +5,8 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.EntityFrameworkCore;
 using GRUPAL.Services;
+using GRUPAL.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace GRUPAL.Controllers;
 
@@ -14,14 +16,16 @@ public class ObjetosPerdidosController : Controller
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
     private readonly CategoriaObjetoService _categoriaObjeto;
+    private readonly IHubContext<ObjetosHub> _objetosHub;
 
     public ObjetosPerdidosController(ApplicationDbContext context, IConfiguration config, IWebHostEnvironment env,
-        CategoriaObjetoService categoriaObjeto)
+        CategoriaObjetoService categoriaObjeto, IHubContext<ObjetosHub> objetosHub)
     {
         _context = context;
         _config = config;
         _env = env;
         _categoriaObjeto = categoriaObjeto;
+        _objetosHub = objetosHub;
     }
 
     [HttpGet]
@@ -100,6 +104,18 @@ public class ObjetosPerdidosController : Controller
         }
         _context.ObjetosPerdidos.Add(objeto);
         await _context.SaveChangesAsync();
+        await _objetosHub.Clients.All.SendAsync("ObjetoPublicado", new
+        {
+            id = objeto.Id,
+            titulo = objeto.Título,
+            categoria = objeto.Categoría,
+            descripcion = objeto.Descripcion,
+            ubicacion = objeto.Ubicacion,
+            fecha = objeto.Fecha,
+            estado = objeto.Estado.ToString(),
+            fotoUrl = objeto.FotoUrl,
+            autor = HttpContext.Session.GetString("UsuarioNombre") ?? "Anónimo"
+        });
         return RedirectToAction("Detalle", "Explorar", new { id = objeto.Id });
     }
 
