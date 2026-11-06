@@ -5,6 +5,8 @@ using GRUPAL.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using System.Text;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace GRUPAL.Controllers;
 
@@ -12,10 +14,12 @@ public class CuentaController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly PasswordHasher<Usuario> _hasher = new();
+    private readonly IConfiguration _configuration;
 
-    public CuentaController(ApplicationDbContext context)
+    public CuentaController(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     // GET: Cuenta/CrearCuenta
@@ -74,12 +78,94 @@ public class CuentaController : Controller
     }
 
     // GET: Cuenta/Ingresar
-    public IActionResult Ingresar()
+    public IActionResult Ingresar(bool googleError = false)
     {
         if (HttpContext.Session.GetInt32("UsuarioId").HasValue)
             return RedirectToAction("Index", "Home");
-            
+        ViewBag.GoogleLoginEnabled = GoogleLoginEnabled;
+        if (googleError) ViewBag.Error = "No se pudo iniciar sesión con Google. Inténtalo de nuevo.";
+        else if (TempData["Error"] is string error) ViewBag.Error = error;
         return View();
+    }
+
+    private bool GoogleLoginEnabled =>
+        !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientId"]) &&
+        !string.IsNullOrWhiteSpace(_configuration["Authentication:Google:ClientSecret"]);
+
+    [HttpGet]
+    public IActionResult GoogleLogin(string? returnUrl = null)
+    {
+        if (!GoogleLoginEnabled)
+        {
+            TempData["Error"] = "El inicio de sesión con Google aún no está configurado.";
+            return RedirectToAction(nameof(Ingresar));
+        }
+
+        var safeReturnUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action("Index", "Home");
+        var properties = new AuthenticationProperties
+        {
+            RedirectUri = Url.Action(nameof(GoogleCallback), "Cuenta", new { returnUrl = safeReturnUrl })
+        };
+        return Challenge(properties, "Google");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GoogleCallback(string? returnUrl = null)
+    {
+        if (!GoogleLoginEnabled)
+            return RedirectToAction(nameof(Ingresar), new { googleError = true });
+
+        var external = await HttpContext.AuthenticateAsync("GoogleExternal");
+        if (!external.Succeeded || external.Principal is null)
+            return RedirectToAction(nameof(Ingresar), new { googleError = true });
+
+        var principal = external.Principal;
+        var correo = principal.FindFirstValue(ClaimTypes.Email) ?? principal.FindFirstValue("email");
+        var emailVerified = principal.FindFirstValue("verified_email");
+        if (string.IsNullOrWhiteSpace(correo) || string.Equals(emailVerified, "false", StringComparison.OrdinalIgnoreCase))
+        {
+            await HttpContext.SignOutAsync("GoogleExternal");
+            return RedirectToAction(nameof(Ingresar), new { googleError = true });
+        }
+
+        correo = correo.Trim().ToLowerInvariant();
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+        if (usuario is null)
+        {
+            var nombre = principal.FindFirstValue(ClaimTypes.Name) ?? principal.FindFirstValue("name") ?? correo;
+            usuario = new Usuario
+            {
+                Nombre = nombre.Trim()[..Math.Min(nombre.Trim().Length, 100)],
+                Correo = correo,
+                Contraseña = string.Empty,
+                PublicacionesActivas = 0,
+                HistoriasResueltas = 0,
+                BuenasAcciones = 0
+            };
+            var claveAleatoria = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+            usuario.Contraseña = _hasher.HashPassword(usuario, claveAleatoria);
+            _context.Usuarios.Add(usuario);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                _context.Entry(usuario).State = EntityState.Detached;
+                usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Correo == correo);
+                if (usuario is null)
+                {
+                    await HttpContext.SignOutAsync("GoogleExternal");
+                    return RedirectToAction(nameof(Ingresar), new { googleError = true });
+                }
+            }
+        }
+
+        HttpContext.Session.Clear();
+        HttpContext.Session.SetInt32("UsuarioId", usuario.Id);
+        HttpContext.Session.SetString("UsuarioNombre", usuario.Nombre);
+        await HttpContext.SignOutAsync("GoogleExternal");
+        return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl!) : RedirectToAction("Index", "Home");
     }
 
     // POST: Cuenta/Ingresar
