@@ -1,5 +1,7 @@
 using GRUPAL.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using GRUPAL.Services;
 using Microsoft.OpenApi;
@@ -20,6 +22,38 @@ builder.Services.AddSingleton<SentimientoService>();
 builder.Services.AddScoped<AsistenteAlToke>();
 builder.Services.AddScoped<AlgoliaObjetosService>();
 builder.Services.AddHttpClient();
+
+const string googleExternalCookie = "GoogleExternal";
+const string googleScheme = "Google";
+builder.Services.AddAuthentication();
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddCookie(googleExternalCookie, options =>
+        {
+            options.Cookie.Name = ".AlToke.Google.External";
+            options.Cookie.HttpOnly = true;
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+            options.SlidingExpiration = false;
+        })
+        .AddGoogle(googleScheme, options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            options.SignInScheme = googleExternalCookie;
+            options.CallbackPath = "/signin-google";
+            options.Scope.Add("email");
+            options.ClaimActions.MapJsonKey("verified_email", "verified_email");
+            options.Events.OnRemoteFailure = context =>
+            {
+                context.HandleResponse();
+                context.Response.Redirect("/Cuenta/Ingresar?googleError=1");
+                return Task.CompletedTask;
+            };
+        });
+}
 builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo
 {
     Title = "AlToke - API de objetos", Version = "v1",
@@ -65,6 +99,8 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+// Render termina HTTPS en su proxy; procesa X-Forwarded-Proto antes de auth y redirecciones.
+app.UseForwardedHeaders();
 
 // ── Paso 6: Aplicar migraciones automáticamente al iniciar y Seed Data
 using (var scope = app.Services.CreateScope())
@@ -111,6 +147,7 @@ app.UseRouting();
 
 // El middleware de sesión debe ir ANTES de UseAuthorization
 app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
