@@ -105,6 +105,19 @@ var app = builder.Build();
 // Render termina HTTPS en su proxy; procesa X-Forwarded-Proto antes de auth y redirecciones.
 app.UseForwardedHeaders();
 
+var renderHostname = Environment.GetEnvironmentVariable("RENDER_EXTERNAL_HOSTNAME");
+if (!string.IsNullOrWhiteSpace(renderHostname))
+{
+    app.Use(async (context, next) =>
+    {
+        if (string.Equals(context.Request.Host.Host, renderHostname, StringComparison.OrdinalIgnoreCase))
+        {
+            context.Request.Scheme = "https";
+        }
+        await next(context);
+    });
+}
+
 // ── Paso 6: Aplicar migraciones automáticamente al iniciar y Seed Data
 using (var scope = app.Services.CreateScope())
 {
