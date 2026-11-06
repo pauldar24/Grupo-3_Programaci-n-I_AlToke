@@ -18,7 +18,7 @@ public sealed class CategoriaObjetoService(
     private string DirectorioModelo => environment.IsProduction()
         ? "/app/data/ml"
         : Path.Combine(environment.ContentRootPath, "ML", "Models");
-    private string RutaModelo => Path.Combine(DirectorioModelo, "categoria-objetos.zip");
+    private string RutaModelo => Path.Combine(DirectorioModelo, "categoria-objetos-v2.zip");
 
     public async Task<string?> PredecirAsync(string texto, CancellationToken ct = default)
     {
@@ -82,19 +82,22 @@ public sealed class CategoriaObjetoService(
         }
 
         var datos = _ml.Data.LoadFromEnumerable(filas);
-        var pipeline = _ml.Transforms.Conversion.MapValueToKey("Label", nameof(EjemploCategoria.Categoria))
-            .Append(_ml.Transforms.Text.FeaturizeText("Features", nameof(EjemploCategoria.Texto)))
+        var datosConEtiqueta = _ml.Transforms.Conversion.MapValueToKey("Label", nameof(EjemploCategoria.Categoria))
+            .Fit(datos)
+            .Transform(datos);
+        var pipeline = _ml.Transforms.Text.FeaturizeText("Features", nameof(EjemploCategoria.Texto))
             .Append(_ml.MulticlassClassification.Trainers.SdcaMaximumEntropy(
                 labelColumnName: "Label", featureColumnName: "Features"))
             .Append(_ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
-        var model = pipeline.Fit(datos);
+        var model = pipeline.Fit(datosConEtiqueta);
 
         _predictor?.Dispose();
         _predictor = _ml.Model.CreatePredictionEngine<EntradaCategoria, SalidaCategoria>(model);
         try
         {
             Directory.CreateDirectory(DirectorioModelo);
-            _ml.Model.Save(model, datos.Schema, RutaModelo);
+            var esquemaPrediccion = _ml.Data.LoadFromEnumerable(Array.Empty<EntradaCategoria>()).Schema;
+            _ml.Model.Save(model, esquemaPrediccion, RutaModelo);
         }
         catch (Exception ex) { logger.LogWarning(ex, "El clasificador funciona en memoria, pero no se pudo guardar el archivo del modelo."); }
 
