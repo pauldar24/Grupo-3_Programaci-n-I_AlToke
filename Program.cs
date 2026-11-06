@@ -19,6 +19,7 @@ if (!string.IsNullOrEmpty(port))
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<RecomendadorObjetos>();
 builder.Services.AddSingleton<SentimientoService>();
+builder.Services.AddSingleton<CategoriaObjetoService>();
 builder.Services.AddScoped<AsistenteAlToke>();
 builder.Services.AddScoped<AlgoliaObjetosService>();
 builder.Services.AddHttpClient();

@@ -18,6 +18,11 @@
         <button class="btn btn-outline-altoke btn-sm" type="submit"><i class="bi bi-search me-1"></i>Sincronizar búsqueda Algolia</button>
         <span class="text-muted small ms-2">Opcional: requiere credenciales de Algolia.</span>
     </form>
+    <form asp-controller="Admin" asp-action="ReentrenarCategoria" method="post" class="mb-3">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-cpu me-1"></i>Reentrenar sugeridor de categorías</button>
+        <span class="text-muted small ms-2">Usa los avisos guardados actualmente.</span>
+    </form>
     <ul class="nav nav-pills mb-4">
         <li class="nav-item">
             <a class="nav-link active" asp-action="Index" style="background-color: #FF6B00; color: white;">Dashboard</a>

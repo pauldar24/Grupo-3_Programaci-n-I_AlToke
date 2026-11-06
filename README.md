@@ -23,12 +23,38 @@ Las claves no se incluyen en el código. Usa variables de entorno `SECCION__CLAV
 | Variable | Función |
 |---|---|
 | `AdminSettings__Password` | Contraseña de acceso a `/Admin/Login` (obligatoria para administración) |
+| `Authentication__Google__ClientId`, `Authentication__Google__ClientSecret` | Inicio de sesión con Google OAuth 2.0 (no solicita acceso al buzón de Gmail) |
 | `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret` | Cargar imágenes persistentes, opcional |
 | `ConnectionStrings__Redis` | Sesiones con caché distribuida; si se omite usa memoria local |
-| `Groq__ApiKey`, `Groq__Model` | Asistente de IA opcional; sin clave funciona la respuesta local basada en publicaciones y FAQ |
+| `Groq__ApiKey`, `Groq__Model`, `Groq__BaseUrl` | Asistente de IA opcional; sin clave funciona la respuesta local basada en publicaciones y FAQ |
 | `Algolia__ApplicationId`, `Algolia__SearchApiKey`, `Algolia__AdminApiKey`, `Algolia__IndexName` | Autocompletado externo y sincronización desde el panel, opcional |
-| `Sentimiento__Enabled` | Modelo ML.NET para analizar mensajes de contacto (activado por defecto) |
+| `Sentimiento__Enabled` | Activa el clasificador ML.NET de mensajes de contacto (activo por defecto) |
 | `SeedDemoData` | Habilita datos de muestra en una base vacía; activo por defecto |
+
+El botón **Continuar con Google** solo aparece cuando están definidas ambas credenciales. Google devuelve el perfil y correo para iniciar sesión; AlToke no pide permisos para leer Gmail. Los secretos se guardan como variables privadas en Render, nunca en `appsettings.json`.
+
+## Modelos de Machine Learning
+
+AlToke integra dos modelos ML.NET, sin GPU ni un servicio externo de inferencia:
+
+- **Sentimiento binario:** clasifica los mensajes de contacto como positivos o negativos. Se entrena con `ML/comentarios_entrenamiento.csv`, evalúa una partición reservada del 20 % y luego ajusta el artefacto final con todos los ejemplos. El panel muestra la etiqueta como apoyo; no sustituye la revisión humana.
+- **Categoría multiclase:** sugiere una categoría a partir del título y la descripción en el formulario de publicación. Se entrena con los avisos de SQLite cuando hay al menos 10 avisos y dos categorías; la persona siempre confirma la opción. El panel administrativo permite reentrenarlo.
+
+Los artefactos se guardan en `/app/data/ml` en Render. Si el servicio no tiene disco persistente, los modelos pueden volver a entrenarse desde los datos de la aplicación después de un reinicio; para conservar SQLite y los modelos, conecta un disco persistente montado en `/app/data`.
+
+## Despliegue de APIs en Render
+
+El proyecto se ejecuta como un único Web Service Docker: la API REST de AlToke y las integraciones externas forman parte de la aplicación. El `Dockerfile` publica .NET 10. En Render, configura `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` para que ASP.NET Core reconozca el HTTPS original del proxy y construya correctamente el callback OAuth.
+
+APIs e integraciones:
+
+- **API REST propia:** `/api/objetos`; los GET son públicos, las escrituras requieren sesión y antifalsificación.
+- **Google OAuth 2.0:** inicio de sesión. Callback de producción: `https://<dominio-render>/signin-google`.
+- **Groq:** respuestas del chatbot (opcional).
+- **Algolia:** búsqueda y sincronización de avisos (opcional).
+- **Cloudinary:** almacenamiento de fotos (opcional).
+
+Groq, Algolia y Cloudinary ya tienen rutas de respaldo locales. Su código desplegado no implica que estén conectados: necesitan credenciales válidas en Render. No hay integración con Gmail API para leer correo; Google se usa solamente como proveedor de identidad.
 
 **Importante:** los ZIP originales contenían una contraseña de administración y credenciales de Cloudinary escritas en `appsettings.json`. Se retiraron del proyecto actualizado; **debes revocarlas y sustituirlas en el proveedor correspondiente**, porque haberlas quitado del ZIP no impide que las copias anteriores sigan expuestas. No publiques archivos secretos ni bases de datos con credenciales reales.
 
@@ -38,7 +64,7 @@ Las claves no se incluyen en el código. Usa variables de entorno `SECCION__CLAV
 - `/Explorar/Detalle/{id}`: ficha completa, autor, ubicación, favoritos, solicitud al propietario y avisos relacionados.
 - `/Favoritos`: publicaciones guardadas y recomendaciones de objetos similares basadas en categoría, texto, ubicación y preferencias. **No** usa el modelo de factorización de productos de Demo20262, porque ese dataset no representa objetos perdidos.
 - `/Recuperaciones`: solicitudes enviadas/recibidas, aprobación o rechazo, respuesta privada de coordinación y aviso de solicitudes pendientes en la navegación.
-- `/ObjetosPerdidos/Create`, `/ObjetosPerdidos/Editar/{id}`: publicación con foto y edición por el propietario. Si Cloudinary no está configurado, la imagen se guarda bajo `wwwroot/uploads` (almacenamiento local **no persistente** en contenedores efímeros).
+- `/ObjetosPerdidos/Create`, `/ObjetosPerdidos/Editar/{id}`: publicación con foto, sugerencia de categoría por ML.NET y edición por el propietario. Si Cloudinary no está configurado, la imagen se guarda bajo `wwwroot/uploads` (almacenamiento local **no persistente** en contenedores efímeros).
 - `/Home/Contacto`: formulario y registro de mensajes.
 - `/Reportes/Contactos` y `/Conocimiento`: reportes administrativos, mantenimiento de respuestas e importación de documentos .txt/.md para el asistente local.
 - Asistente flotante: consulta avisos reales y artículos de ayuda. Se conecta a Groq si hay clave; sin clave usa una respuesta local con enlaces a objetos. No inventa hallazgos.

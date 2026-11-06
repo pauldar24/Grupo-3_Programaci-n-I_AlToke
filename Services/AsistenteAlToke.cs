@@ -45,7 +45,8 @@ public class AsistenteAlToke(ApplicationDbContext db, IHttpClientFactory httpFac
                 using var http = httpFactory.CreateClient();
                 http.Timeout = TimeSpan.FromSeconds(15);
                 http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                using var response = await http.PostAsJsonAsync("https://api.groq.com/openai/v1/chat/completions", new
+                var groqUrl = configuration["Groq:BaseUrl"] ?? "https://api.groq.com/openai/v1/chat/completions";
+                using var response = await http.PostAsJsonAsync(groqUrl, new
                 {
                     model = configuration["Groq:Model"] ?? "llama-3.3-70b-versatile",
                     temperature = 0.2,
